@@ -1,13 +1,22 @@
+/**!
+ * @Project: angular-hitmands-auth
+ * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
+ * @Link: https://github.com/hitmands/angular-hitmands-auth
+ * @License: MIT
+ * @Date: 2014-10-27
+ * @Version: 0.0.1
+***/
+
 (function(window, angular) {
    'use strict';
 
    /* @ngInject */
    function AuthProviderFactory($httpProvider) {
       var self = this, currentUser = null, authToken = null, routes = {
-         "login": "users/login",
-         "logout": "users/logout",
-         "fetch": "users/me",
-         "authenticationRedirect": "login"
+         "login": "/users/login",
+         "logout": "/users/logout",
+         "fetch": "/users/me",
+         "authenticationRedirect": "/login"
       }, EVENTS = {
          "login": {
             "success": "hitmands.auth:login.resolved",
@@ -23,7 +32,7 @@
          },
          "update": "hitmands.auth:update"
       };
-      this.routesList = function(newRoutes) {
+      this.useRoutes = function(newRoutes) {
          angular.isObject(newRoutes) && (routes = angular.extend(routes, newRoutes));
          return this;
       };
@@ -32,6 +41,8 @@
       };
       var _isUserLoggedIn = function() {
          return angular.isObject(self.getLoggedUser());
+      }, _getAuthToken = function() {
+         return authToken;
       };
       this.setLoggedUser = function(user) {
          if (!angular.isObject(user)) {
@@ -46,16 +57,17 @@
       };
       this.tokenizeHttp = function(tokenKey) {
          (!angular.isString(tokenKey) || tokenKey.length < 1) && (tokenKey = "X-AUTH-TOKEN");
-         $httpProvider.interceptors.push(['$q', function($q) {
+         var _appendToken = function(httpRequestConfig) {
+            _isUserLoggedIn() && angular.isObject(httpRequestConfig) && httpRequestConfig.hasOwnProperty("headers") && (httpRequestConfig.headers[tokenKey] = _getAuthToken());
+         };
+         $httpProvider.interceptors.push(function() {
             return {
                "request": function(config) {
-                  $q.when(config).then(function() {
-                     angular.isString(authToken) && authToken.length > 0 && (config.headers[tokenKey] = authToken);
-                  });
+                  _appendToken(config);
                   return config;
                }
             };
-         }]);
+         });
          return this;
       };
       this.$get = ['$rootScope', '$q', '$http', '$state', function($rootScope, $q, $http, $state) {
@@ -118,7 +130,7 @@
                });
             },
             "getAuthenticationToken": function() {
-               return authToken;
+               return _getAuthToken();
             }
          };
       }];
