@@ -25,3 +25,4 @@ runTest.sh
 dump.rdb
 
 /bower_components/
+/src/vendor

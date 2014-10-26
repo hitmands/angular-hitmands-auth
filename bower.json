@@ -7,7 +7,6 @@
     "Giuseppe Mandato <gius.mand.developer@gmail.com>"
   ],
   "description": "Angular Module for Authentication Managements",
-  "main": "./release/angular-hitmands-auth.js",
   "keywords": [
     "AngularJS",
     "Auth",
