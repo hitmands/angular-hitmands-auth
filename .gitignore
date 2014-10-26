@@ -1,0 +1,27 @@
+.sass-cache
+.idea
+Gemfile.lock
+node_modules
+coverage/
+logs
+*.log
+originalChannel
+media/*
+PSD_AI
+config/runtime.json
+
+# OS generated files #
+######################
+*/.DS_Store
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+run.sh
+runTest.sh
+dump.rdb
+
+/bower_components/

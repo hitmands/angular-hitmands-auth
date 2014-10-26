@@ -1,0 +1,34 @@
+{
+  "name": "angular-hitmands-auth",
+  "version": "0.0.1",
+  "main": "./release/angular-ui-router.js",
+  "homepage": "https://github.com/hitmands/angular-hitmands-auth",
+  "authors": [
+    "Giuseppe Mandato <gius.mand.developer@gmail.com>"
+  ],
+  "description": "Angular Module for Authentication Managements",
+  "main": "./release/angular-hitmands-auth.js",
+  "keywords": [
+    "AngularJS",
+    "Auth",
+    "User Authentication"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "./src/vendor",
+    "test",
+    ".gitignore",
+    ".editorconfig",
+    "Gruntfile.js",
+    "config/",
+    "package.json",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.3.0",
+    "angular-ui-router": "^0.2.11"
+  }
+}

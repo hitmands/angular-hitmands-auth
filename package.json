@@ -1,0 +1,35 @@
+{
+  "name": "angular-hitmands-auth",
+  "version": "0.0.1",
+  "homepage": "https://github.com/hitmands/angular-hitmands-auth",
+  "main": "./release/angular-ui-router.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hitmands/angular-hitmands-auth.git"
+  },
+  "keywords": [
+    "AngularJS",
+    "Auth",
+    "User Authentication"
+  ],
+  "authors": [
+    "Giuseppe Mandato <gius.mand.developer@gmail.com>"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hitmands/angular-hitmands-auth/issues"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "grunt": "~0.4.2",
+    "grunt-contrib-symlink": "~0.3.0",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-contrib-uglify": "~0.6.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-ng-annotate": "~0.4.0",
+    "grunt-angular-templates": "~0.5.7",
+    "jit-grunt": "~0.9.0",
+    "grunt-newer": "~0.8.0",
+    "grunt-contrib-concat": "~0.5.0"
+  }
+}

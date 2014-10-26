@@ -1,0 +1,60 @@
+{
+   "predef"        : [ "angular", "jQuery", "fsys", "google" ],
+
+   "passfail"      : false,
+   "maxerr"        : 100,
+   "camelcase"     : true,
+
+   "multistr"      : false,
+
+   "browser"       : true,
+   "node"          : false,
+   "rhino"         : false,
+   "couch"         : false,
+
+   "wsh"           : true,
+   "jquery"        : true,
+   "prototypejs"   : false,
+   "mootools"      : false,
+
+   "dojo"          : false,
+
+   "debug"         : false,
+   "devel"         : true,
+
+   "es3"        : true,
+   "forin"        : true,
+   "strict"        : true,
+   "globalstrict"  : false,
+
+
+   "asi"           : true,
+   "laxbreak"      : true,
+   "bitwise"       : true,
+   "boss"          : false,
+   "curly"         : true,
+   "eqeqeq"        : true,
+   "eqnull"        : false,
+   "evil"          : false,
+   "expr"          : true,
+   "immed"         : true,
+   "latedef"       : true,
+   "loopfunc"      : false,
+   "noarg"         : true,
+   "scripturl"     : true,
+   "shadow"        : false,
+   "supernew"      : false,
+   "undef"         : true,
+   "unused"        : true,
+
+
+   "newcap"        : true,
+   "noempty"       : true,
+   "nonew"         : true,
+   "nomen"         : false,
+   "onevar"        : true,
+   "plusplus"      : false,
+   "sub"           : false,
+   "trailing"      : true,
+   "white"         : false
+}
