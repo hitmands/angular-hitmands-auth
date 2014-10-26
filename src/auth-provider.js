@@ -4,10 +4,10 @@ function AuthProviderFactory( $httpProvider ) {
    var currentUser = null;
    var authToken = null;
    var routes = {
-      "login": 'users/login',
-      "logout": 'users/logout',
-      "fetch": 'users/me',
-      "authenticationRedirect": 'login'
+      "login": '/users/login',
+      "logout": '/users/logout',
+      "fetch": '/users/me',
+      "authenticationRedirect": '/login'
    };
    var EVENTS = {
       login: {
@@ -30,7 +30,7 @@ function AuthProviderFactory( $httpProvider ) {
     * Extends Used Routes
     * @param {Object} [newRoutes = {login: String, logout: String, fetch: String, authRedirect: String}]
     */
-   this.routesList = function AuthServiceRoutesListGetterSetter( newRoutes ) {
+   this.useRoutes = function AuthServiceRoutesListGetterSetter( newRoutes ) {
       if( angular.isObject(newRoutes) ) {
          routes = angular.extend(routes, newRoutes);
       }
@@ -57,6 +57,10 @@ function AuthProviderFactory( $httpProvider ) {
    var _isUserLoggedIn = function() {
 
       return angular.isObject( self.getLoggedUser() );
+   };
+
+   var _getAuthToken = function() {
+      return authToken;
    };
 
    /**
@@ -86,18 +90,26 @@ function AuthProviderFactory( $httpProvider ) {
       if( !angular.isString(tokenKey) || tokenKey.length < 1 ) {
          tokenKey = 'X-AUTH-TOKEN';
       }
+      /**
+       *
+       * @param {Object} httpRequestConfig
+       * @private
+       */
+      var _appendToken = function( httpRequestConfig ) {
+         if(
+            _isUserLoggedIn() &&
+            angular.isObject(httpRequestConfig) &&
+            httpRequestConfig.hasOwnProperty('headers')
+         ) {
+            httpRequestConfig.headers[tokenKey] = _getAuthToken();
+         }
+      };
 
       $httpProvider.interceptors.push(function($q) {
 
          return {
             request: function(config) {
-
-               $q.when(config).then(function() {
-                  if( angular.isString( authToken ) && authToken.length > 0 ) {
-                     config.headers[tokenKey] = authToken;
-                  }
-               });
-
+               _appendToken(config);
                return config;
             }
          };
@@ -252,7 +264,7 @@ function AuthProviderFactory( $httpProvider ) {
           */
          getAuthenticationToken: function() {
 
-            return authToken;
+            return _getAuthToken();
          }
 
       };
