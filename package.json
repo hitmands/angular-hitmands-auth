@@ -19,7 +19,11 @@
   "bugs": {
     "url": "https://github.com/hitmands/angular-hitmands-auth/issues"
   },
-  "devDependencies": {},
+  "devDependencies": {
+     "karma": "~0.12.24",
+     "karma-chrome-launcher": "~0.1.5",
+     "karma-jasmine": "~0.1.5"
+  },
   "dependencies": {
     "grunt": "~0.4.2",
     "grunt-contrib-symlink": "~0.3.0",
