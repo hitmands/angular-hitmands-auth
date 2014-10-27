@@ -10,6 +10,12 @@ module.exports = function(grunt) {
    grunt.config.init({
       pkg: pkg,
 
+      githooks: {
+         all: {
+            'pre-commit': 'jshint'
+         }
+      },
+
       jshint: {
          options: {
             jshintrc: './config/.jshintrc',

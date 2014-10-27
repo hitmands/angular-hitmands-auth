@@ -1,6 +1,0 @@
-#!/bin/sh
-#
-# Pre-commit hooks
-
-# Lint stuff before committing
-grunt jshint
