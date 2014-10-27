@@ -3,16 +3,15 @@ module.exports = function(grunt) {
 
    require('jit-grunt')(grunt);
 
-
    var pkg = grunt.file.readJSON('package.json');
-
    var _banner = "/**!\n * @Project: <%= pkg.name %>\n * @Authors: <%= pkg.authors.join(', ') %>\n * @Link: <%= pkg.homepage %>\n * @License: MIT\n * @Date: <%= grunt.template.today('yyyy-mm-dd') %>\n * @Version: <%= pkg.version %>\n***/\n\n";
+
    grunt.config.init({
       pkg: pkg,
 
       githooks: {
          all: {
-            'pre-commit': 'grunt release'
+            'pre-commit': 'release'
          }
       },
 
