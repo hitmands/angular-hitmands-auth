@@ -1,5 +1,5 @@
 {
-   "predef"        : [ "angular", "jQuery", "fsys", "google" ],
+   "predef"        : [ "angular" ],
 
    "passfail"      : false,
    "maxerr"        : 100,
@@ -13,7 +13,7 @@
    "couch"         : false,
 
    "wsh"           : true,
-   "jquery"        : true,
+   "jquery"        : false,
    "prototypejs"   : false,
    "mootools"      : false,
 

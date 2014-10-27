@@ -2,7 +2,7 @@
   "name": "angular-hitmands-auth",
   "version": "0.0.1",
   "homepage": "https://github.com/hitmands/angular-hitmands-auth",
-  "main": "./release/angular-ui-router.js",
+  "main": "./release/angular-hitmands-auth.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/hitmands/angular-hitmands-auth.git"
