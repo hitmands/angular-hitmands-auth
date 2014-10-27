@@ -12,7 +12,7 @@ module.exports = function(grunt) {
 
       githooks: {
          all: {
-            'pre-commit': 'grunt jshint'
+            'pre-commit': 'grunt release'
          }
       },
 
