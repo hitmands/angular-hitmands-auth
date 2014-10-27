@@ -3,4 +3,4 @@
 # Pre-commit hooks
 
 # Lint stuff before committing
-grunt release
+grunt jshint
