@@ -44,15 +44,13 @@
       }, _getAuthToken = function() {
          return authToken;
       };
-      this.setLoggedUser = function(user) {
-         if (!angular.isObject(user)) {
+      this.setLoggedUser = function(user, authenticationToken) {
+         if (!angular.isObject(user) || !angular.isString(authenticationToken) || authenticationToken.length < 1) {
             user = null;
-            authToken = null;
+            authenticationToken = null;
          }
          currentUser = angular.copy(user);
-         try {
-            authToken = currentUser.token;
-         } catch (error) {}
+         authToken = authenticationToken;
          return this;
       };
       this.tokenizeHttp = function(tokenKey) {
@@ -68,8 +66,8 @@
          return this;
       };
       this.$get = ['$rootScope', '$q', '$http', '$state', function($rootScope, $q, $http, $state) {
-         var _setLoggedUser = function(newUserData) {
-            self.setLoggedUser(newUserData);
+         var _setLoggedUser = function(newUserData, newAuthToken) {
+            self.setLoggedUser(newUserData, newAuthToken);
             $rootScope.$broadcast(EVENTS.update, self.getLoggedUser(), _isUserLoggedIn());
          };
          return {
@@ -77,11 +75,11 @@
                return $http.post(routes.login, credentials, {
                   "cache": !1
                }).then(function(result) {
-                  _setLoggedUser(result.data);
+                  _setLoggedUser(result.data, result.data.token);
                   $rootScope.$broadcast(EVENTS.login.success, result);
                   return result;
                }, function(error) {
-                  _setLoggedUser(null);
+                  _setLoggedUser(null, null);
                   $rootScope.$broadcast(EVENTS.login.error, error);
                   return error;
                });
@@ -90,11 +88,11 @@
                return $http.get(routes.fetch, {
                   "cache": !1
                }).then(function(result) {
-                  _setLoggedUser(result.data);
+                  _setLoggedUser(result.data, result.data.token);
                   $rootScope.$broadcast(EVENTS.fetch.success, result);
                   return result;
                }, function(error) {
-                  _setLoggedUser(null);
+                  _setLoggedUser(null, null);
                   $rootScope.$broadcast(EVENTS.fetch.error, error);
                   return error;
                });
@@ -103,11 +101,11 @@
                return $http.post(routes.logout, null, {
                   "cache": !1
                }).then(function(result) {
-                  _setLoggedUser(null);
+                  _setLoggedUser(null, null);
                   $rootScope.$broadcast(EVENTS.logout.success, result);
                   return result;
                }, function(error) {
-                  _setLoggedUser(null);
+                  _setLoggedUser(null, null);
                   $rootScope.$broadcast(EVENTS.logout.error, error);
                   return error;
                });

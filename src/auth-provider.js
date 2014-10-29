@@ -66,18 +66,16 @@ function AuthProviderFactory( $httpProvider ) {
    /**
     *
     * @param {Object|null} [user=null]
+    * @param {String|null} [authenticationToken=null]
     */
-   this.setLoggedUser = function AuthServiceLoggedUserSetter( user ) {
-      if( !angular.isObject( user ) ) {
+   this.setLoggedUser = function AuthServiceLoggedUserSetter( user, authenticationToken ) {
+      if( !angular.isObject( user ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
          user = null;
-         authToken = null;
+         authenticationToken = null;
       }
 
       currentUser = angular.copy(user);
-      try {
-         authToken = currentUser.token;
-      } catch ( error ) {}
-
+      authToken = authenticationToken;
       return this;
    };
 
@@ -90,26 +88,20 @@ function AuthProviderFactory( $httpProvider ) {
       if( !angular.isString(tokenKey) || tokenKey.length < 1 ) {
          tokenKey = 'X-AUTH-TOKEN';
       }
-      /**
-       *
-       * @param {Object} httpRequestConfig
-       * @private
-       */
-      var _appendToken = function( httpRequestConfig ) {
-         if(
-            _isUserLoggedIn() &&
-            angular.isObject(httpRequestConfig) &&
-            httpRequestConfig.hasOwnProperty('headers')
-         ) {
-            httpRequestConfig.headers[tokenKey] = _getAuthToken();
-         }
-      };
 
       $httpProvider.interceptors.push(function($q) {
 
          return {
             request: function(config) {
-               _appendToken(config);
+
+               if(
+                  _isUserLoggedIn() &&
+                  angular.isObject(config) &&
+                  config.hasOwnProperty('headers')
+               ) {
+                  config.headers[tokenKey] = _getAuthToken();
+               }
+
                return config;
             }
          };
@@ -125,10 +117,11 @@ function AuthProviderFactory( $httpProvider ) {
       /**
        *
        * @param {Object|null} newUserData
+       * @param {String|null} newAuthToken
        * @private
        */
-      var _setLoggedUser = function( newUserData ) {
-         self.setLoggedUser( newUserData );
+      var _setLoggedUser = function( newUserData, newAuthToken ) {
+         self.setLoggedUser( newUserData, newAuthToken );
          $rootScope.$broadcast(EVENTS.update, self.getLoggedUser(), _isUserLoggedIn());
       };
 
@@ -147,13 +140,13 @@ function AuthProviderFactory( $httpProvider ) {
                .post(routes.login, credentials, { cache: false })
                .then(
                function( result ) {
-                  _setLoggedUser( result.data );
+                  _setLoggedUser( result.data, result.data.token );
                   $rootScope.$broadcast(EVENTS.login.success, result);
 
                   return result;
                },
                function( error ) {
-                  _setLoggedUser( null );
+                  _setLoggedUser( null, null );
                   $rootScope.$broadcast(EVENTS.login.error, error);
 
                   return error;
@@ -169,16 +162,16 @@ function AuthProviderFactory( $httpProvider ) {
          fetchLoggedUser: function() {
 
             return $http
-               .get(routes.fetch, null, { cache: false })
+               .get(routes.fetch, { cache: false })
                .then(
                function( result ) {
-                  _setLoggedUser( result.data );
+                  _setLoggedUser( result.data, result.data.token );
                   $rootScope.$broadcast(EVENTS.fetch.success, result);
 
                   return result;
                },
                function( error ) {
-                  _setLoggedUser( null );
+                  _setLoggedUser( null, null );
                   $rootScope.$broadcast(EVENTS.fetch.error, error);
 
                   return error;
@@ -197,13 +190,13 @@ function AuthProviderFactory( $httpProvider ) {
                .post(routes.logout, null, { cache: false })
                .then(
                function( result ) {
-                  _setLoggedUser( null );
+                  _setLoggedUser( null, null );
                   $rootScope.$broadcast(EVENTS.logout.success, result);
 
                   return result;
                },
                function( error ) {
-                  _setLoggedUser( null );
+                  _setLoggedUser( null, null );
                   $rootScope.$broadcast(EVENTS.logout.error, error);
 
                   return error;

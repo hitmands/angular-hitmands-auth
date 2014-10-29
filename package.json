@@ -23,7 +23,8 @@
     "karma": "~0.12.24",
     "karma-jasmine": "~0.1.5",
     "codeclimate-test-reporter": "0.0.4",
-    "karma-phantomjs-launcher": "~0.1.4"
+    "karma-phantomjs-launcher": "~0.1.4",
+    "karma-coverage": "~0.2.6"
   },
   "dependencies": {
     "grunt": "~0.4.2",
