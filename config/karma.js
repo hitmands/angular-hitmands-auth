@@ -56,29 +56,16 @@ module.exports = function(config) {
     logLevel: config.LOG_INFO,
 
 
-     customLaunchers: {
-        'PhantomJS_custom': {
-           base: 'PhantomJS',
-           options: {
-              windowName: 'angular-hitmands-auth test',
-              settings: {
-                 webSecurityEnabled: false
-              }
-           },
-           flags: ['--remote-debugger-port=9000']
-        }
-     },
-
      // enable / disable watching file and executing tests whenever any file changes
      autoWatch: true,
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['PhantomJS', 'PhantomJS_custom'],
+    browsers: ['PhantomJS'],
 
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: false
+    singleRun: true
   });
 };
