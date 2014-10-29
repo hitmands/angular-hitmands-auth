@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2014-10-27
+ * @Date: 2014-10-29
  * @Version: 0.0.1
 ***/
 
@@ -57,13 +57,10 @@
       };
       this.tokenizeHttp = function(tokenKey) {
          (!angular.isString(tokenKey) || tokenKey.length < 1) && (tokenKey = "X-AUTH-TOKEN");
-         var _appendToken = function(httpRequestConfig) {
-            _isUserLoggedIn() && angular.isObject(httpRequestConfig) && httpRequestConfig.hasOwnProperty("headers") && (httpRequestConfig.headers[tokenKey] = _getAuthToken());
-         };
          $httpProvider.interceptors.push(function() {
             return {
                "request": function(config) {
-                  _appendToken(config);
+                  _isUserLoggedIn() && angular.isObject(config) && config.hasOwnProperty("headers") && (config.headers[tokenKey] = _getAuthToken());
                   return config;
                }
             };
@@ -90,7 +87,7 @@
                });
             },
             "fetchLoggedUser": function() {
-               return $http.get(routes.fetch, null, {
+               return $http.get(routes.fetch, {
                   "cache": !1
                }).then(function(result) {
                   _setLoggedUser(result.data);

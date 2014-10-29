@@ -34,9 +34,10 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
          loginForm = '<form id="loginForm" name="loginForm" auth-login="fields">' +
          '<input type="text" required ng-model="fields.username"/>' +
          '<input type="password" required ng-model="fields.password"/>' +
+         '<button id="loginBtn" type="submit">submit</button>' +
          '</form>';
 
-         logoutButton = '<button auth-logout>Logout</button>';
+         logoutButton = '<button id="logoutBtn" auth-logout>Logout</button>';
 
 
 
@@ -51,8 +52,10 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
          angular.element(document.body).append($compile(loginForm)($scope));
          $scope.$digest();
 
-
-         document.querySelector('form').dispatchEvent( new Event('submit') );
+         var loginBtn = document.getElementById('loginBtn');
+         var submitEvt = document.createEvent('MouseEvents');
+         submitEvt.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+         loginBtn.dispatchEvent(submitEvt);
 
          expect(AuthService.login).toHaveBeenCalled();
          expect(AuthService.login).toHaveBeenCalledWith(Mocks.validCredentials);
@@ -68,8 +71,10 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
          angular.element(document.body).append($compile(loginForm)($scope));
          $scope.$digest();
 
-
-         document.querySelector('form').dispatchEvent( new Event('submit') );
+         var loginBtn = document.getElementById('loginBtn');
+         var submitEvt = document.createEvent('MouseEvents');
+         submitEvt.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+         loginBtn.dispatchEvent(submitEvt);
 
          expect(AuthService.login).not.toHaveBeenCalled();
       }
@@ -83,8 +88,10 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
          angular.element(document.body).append($compile(logoutButton)($scope));
          $scope.$digest();
 
-
-         document.querySelector('button').dispatchEvent( new Event('click') );
+         var loginBtn = document.getElementById('logoutBtn');
+         var submitEvt = document.createEvent('MouseEvents');
+         submitEvt.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+         loginBtn.dispatchEvent(submitEvt);
 
          expect(AuthService.logout).toHaveBeenCalled();
          expect(AuthService.logout).toHaveBeenCalledWith();

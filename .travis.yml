@@ -9,6 +9,7 @@ before_script:
   - npm install -g codeclimate-test-reporter
 
 script:
+  - bower install
   - grunt release
   - karma start config/karma.js --single-run=true --auto-watch=false
 
