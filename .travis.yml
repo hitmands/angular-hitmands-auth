@@ -6,6 +6,7 @@ before_script:
   - npm install -g karma
   - npm install -g karma-cli
   - npm install -g grunt-cli
+  - npm install -g bower
   - npm install -g codeclimate-test-reporter
 
 script:
