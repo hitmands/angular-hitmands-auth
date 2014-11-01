@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html ng-app="hitmands.auth.sample">
+<head lang="en">
+    <meta charset="UTF-8">
+    <title ng-bind="($state.current.name | uppercase) + ' - Hitmands Authentication Module (Seed)'"></title>
+    <base href="/hitmands-auth/sample/">
+
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+
+    <script src="../src/vendor/angular/angular.js"></script>
+    <script src="../sample/js/logger.js"></script>
+    <script src="../src/vendor/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="../src/vendor/angular-animate/angular-animate.js"></script>
+    <script src="../release/angular-hitmands-auth.min.js"></script>
+
+    <script src="../sample/js/application.js"></script>
+    <script src="../sample/js/filters.js"></script>
+    <script src="../sample/js/controllers.js"></script>
+    <script src="../sample/js/templates-and-fixtures.js"></script>
+
+    <!--Ignore this, is used only for Examples-->
+    <script src="../src/vendor/angular-mocks/angular-mocks.js"></script>
+    <script src="../sample/js/backend-mock.js"></script>
+
+    <style>
+        .state-animate.ng-enter,
+        .state-animate.ng-leave,
+        .state-animate.ng-move { -webkit-transition:0.5s linear all; transition:0.5s linear all; }
+        .state-animate.ng-enter,
+        .state-animate.ng-move { opacity:0; }
+        .state-animate.ng-enter.ng-enter-active,
+        .state-animate.ng-move.ng-move-active { opacity:1; }
+        .state-animate.ng-leave { opacity:1; }
+        .state-animate.ng-leave.ng-leave-active { opacity:0; }
+        h2.state-not-found {
+            width: 320px;
+            height: 320px;
+            line-height: 267px;
+            text-align: center;
+            border-radius: 320px;
+            color: #333;
+            border: 30px dotted #eee;
+            margin: 3em auto;
+            font-size: 3em;
+            font-weight: bolder;
+        }
+        .ellipsis {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .pretty-p {
+            /*text-indent: 3em;*/
+            line-height: 1.5em;
+            text-align: justify;
+            -webkit-hyphens: auto;
+            -moz-hyphens: auto;
+            -ms-hyphens: auto;
+            hyphens: auto;
+        }
+        .table-container,
+        .scroll-x {
+            max-width: 100%;
+            overflow-x: scroll;
+        }
+        #root-header li, [ng-click], [ui-sref] {
+            cursor: pointer;
+        }
+        .td-title {
+            text-align: right;
+            color: #666;
+            padding-right: 1.5em;
+        }
+        .unselectable,
+        .td-title,
+        th {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+        .select-only-text {
+            -moz-user-select: text;
+            -ms-user-select: text;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        .table-profile .td-title {
+            width: 160px;
+        }
+        @media (max-width: 600px) {
+            .table-profile .td-title {
+                width: 85px;
+            }
+        }
+    </style>
+
+</head>
+<body class="select-only-text">
+
+<header id="root-header" ui-view="header"></header>
+<section class="state-animate" id="root-main" ui-view="main"></section>
+
+</body>
+</html>
