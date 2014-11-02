@@ -1,0 +1,62 @@
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+
+
+            <div class="jumbotron scroll-x">
+                <h1 class="ellipsis">Admin Panel</h1>
+                <p>
+                    <small>Access limited at level:</small> <strong>{{ $state.current.authLevel }} - {{ $state.current.authLevel | role }}</strong>
+                </p>
+
+                <div class="panel panel-default panel-primary  ">
+                    <div class="panel-heading">
+                        Users List
+                    </div>
+
+                    <!-- Table -->
+                    <div class="panel-body scroll-x">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th ng-click="sortById()" style="min-width:50px;">
+                                    <span>ID</span>
+                                    <small class="glyphicon " ng-class="{'glyphicon-arrow-up' : sortedBy === 'id' && reverseIds === false, 'glyphicon-arrow-down' : sortedBy === 'id' && reverseIds === true, 'hidden' : sortedBy != 'id'}"></small>
+                                </th>
+                                <th colspan="1">Username</th>
+                                <th colspan="1">Password</th>
+                                <th colspan="3">Display Name</th>
+                                <th colspan="1">Registered At</th>
+                                <th ng-click="sortByAuthLevel()" colspan="1" class="text-right"  style="width: 170px;" >
+                                    <small class="glyphicon " ng-class="{'glyphicon-arrow-up' : sortedBy === 'authLevel' && reverseAuthLevels === false, 'glyphicon-arrow-down' : sortedBy === 'authLevel' && reverseAuthLevels === true, 'hidden' : sortedBy != 'authLevel'}"></small>
+                                    <span>Authentication Level</span>
+                                </th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr class="info">
+                                <td colspan="1">{{ currentUser.id }}</td>
+                                <td colspan="1">{{ currentUser.username }}</td>
+                                <td colspan="1">{{ currentUser.password }}</td>
+                                <td colspan="3">{{ currentUser.displayName }}</td>
+                                <td colspan="1">{{ currentUser.registeredDate | date }}</td>
+                                <td colspan="1" style="width: 170px;" class="text-right"><strong>{{ currentUser.authLevel }}</strong></td>
+                            </tr>
+                            <tr ng-repeat="user in users" ng-hide="currentUser.id === user.id">
+                                <td colspan="1">{{ user.id }}</td>
+                                <td colspan="1">{{ user.username }}</td>
+                                <td colspan="1">{{ user.password }}</td>
+                                <td colspan="3">{{ user.displayName }}</td>
+                                <td colspan="1">{{ user.registeredDate | date }}</td>
+                                <td colspan="1" style="width: 170px;" class="text-right"><strong>{{ user.authLevel }}</strong></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,73 @@
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+
+
+            <div class="jumbotron">
+                <h1 class="ellipsis">Angular Hitmands Auth</h1>
+
+                <p ng-hide="isUserLoggedIn">
+                    <a class="btn btn-primary btn-lg" ui-sref="login" role="button">Login</a>
+                </p>
+
+                <div ng-show="isUserLoggedIn">
+                    <p><strong>Howdy</strong>, {{ currentUser.displayName }}</p>
+
+
+                    <div class="table-container table-profile" style="padding: 2.5em 0;">
+                        <table class="table ">
+                            <colgroup>
+                                <col align="right"  style="text-align: right;background-color: transparent; "/>
+                                <col style="background-color: #fff; "/>
+                            </colgroup>
+                            <tr>
+                                <td class="td-title">Account Type</td>
+                                <td>
+                                    <strong>{{ currentUser.authLevel | role }}</strong>
+                                    (<small>Authentication Level: </small><small>{{ currentUser.authLevel }}</small>)
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="td-title">Members since</td>
+                                <td>{{ currentUser.registeredDate }}</td>
+                            </tr>
+                            <tr>
+                                <td class="td-title">Name</td>
+                                <td>{{ currentUser.name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="td-title">Surname</td>
+                                <td>{{ currentUser.surname }}</td>
+                            </tr>
+                            <tr>
+                                <td class="td-title">Age</td>
+                                <td>{{ currentUser.age }}</td>
+                            </tr>
+                            <tr>
+                                <td class="td-title">Phone</td>
+                                <td>{{ currentUser.phone }}</td>
+                            </tr>
+                            <tr>
+                                <td class="td-title">Username</td>
+                                <td>{{ currentUser.username }}</td>
+                            </tr>
+                            <tr>
+                                <td class="td-title">Email</td>
+                                <td>{{ currentUser.email }}</td>
+                            </tr>
+                            <tr>
+                                <td class="td-title">Company</td>
+                                <td>{{ currentUser.company }}</td>
+                            </tr>
+                            <tr>
+                                <td class="td-title">Description</td>
+                                <td class="pretty-p">{{ currentUser.description }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

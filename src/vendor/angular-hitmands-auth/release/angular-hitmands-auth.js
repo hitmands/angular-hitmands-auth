@@ -1,12 +1,3 @@
-/**!
- * @Project: angular-hitmands-auth
- * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
- * @Link: https://github.com/hitmands/angular-hitmands-auth
- * @License: MIT
- * @Date: 2014-11-02
- * @Version: 0.0.1
-***/
-
 (function(window, angular) {
    'use strict';
 
@@ -18,16 +9,12 @@
       function _getAuthToken() {
          return authToken;
       }
-      /**
-    * @preserve
-    * @callback Requester~requestCallback - The callback that handles the response.
-    */
-      var _dataParser = function(data) {
+      var self = this, currentUser = null, authToken = null, _dataParser = function(data) {
          return {
             "user": data,
             "token": data.token
          };
-      }, self = this, currentUser = null, authToken = null;
+      };
       /**
     * Extends Used Routes
     *
@@ -88,11 +75,16 @@
          return this;
       };
       this.$get = ['$rootScope', '$q', '$http', '$exceptionHandler', function($rootScope, $q, $http, $exceptionHandler) {
-         function _setLoggedUser(newUserData, newAuthToken) {
+         /**
+       * @preserve
+       * @param {Object|null} newUserData
+       * @param {String|null} newAuthToken
+       * @private
+       */
+         var _setLoggedUser = function(newUserData, newAuthToken) {
             self.setLoggedUser(newUserData, newAuthToken);
             $rootScope.$broadcast(EVENTS.update, self.getLoggedUser(), _isUserLoggedIn());
-         }
-         function _sanitizeParsedData(parsedData) {
+         }, sanitizeParsedData = function(parsedData) {
             if (!angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
                $exceptionHandler("AuthService.processServerData", "Invalid callback passed. The Callback must return an object like {user: Object, token: String}");
                parsedData = {
@@ -101,7 +93,7 @@
                };
             }
             return parsedData;
-         }
+         };
          return {
             /**
           * Performs Login Request and sets the Auth Data
@@ -114,7 +106,7 @@
                return $http.post(routes.login, credentials, {
                   "cache": !1
                }).then(function(result) {
-                  var data = _sanitizeParsedData(_dataParser(result.data, result.headers(), result.status));
+                  var data = sanitizeParsedData(_dataParser(result.data, result.headers(), result.status));
                   _setLoggedUser(data.user, data.token);
                   $rootScope.$broadcast(EVENTS.login.success, result);
                   return result;
@@ -134,7 +126,7 @@
                return $http.get(routes.fetch, {
                   "cache": !1
                }).then(function(result) {
-                  var data = _sanitizeParsedData(_dataParser(result.data, result.headers(), result.status));
+                  var data = sanitizeParsedData(_dataParser(result.data, result.headers(), result.status));
                   _setLoggedUser(data.user, data.token);
                   $rootScope.$broadcast(EVENTS.fetch.success, result);
                   return result;
