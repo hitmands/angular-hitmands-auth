@@ -28,11 +28,6 @@
             password: randUser.password,
             rememberMe: false
          };
-         $scope.fields = {
-            username: 'hitmands',
-            password: 'asdasd',
-            rememberMe: true
-         };
 
          $scope.loginSamples = [];
          $scope.reRands = function() {
