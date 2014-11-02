@@ -189,10 +189,11 @@
             /**
           * @preserve
           * @param {Object} state
+          * @param {Object} [user = currentUser]
           * @returns {Boolean} Is the CurrentUser Authorized for State?
           */
-            "authorize": function(state) {
-               return !angular.isNumber(state.authLevel) || state.authLevel < 1 ? !0 : _isUserLoggedIn() ? (self.getLoggedUser().authLevel || 0) >= state.authLevel : !1;
+            "authorize": function(state, user) {
+               return !angular.isNumber(state.authLevel) || state.authLevel < 1 ? !0 : angular.isObject(user) ? (user.authLevel || 0) >= state.authLevel : _isUserLoggedIn() ? (self.getLoggedUser().authLevel || 0) >= state.authLevel : !1;
             },
             /**
           * @preserve
@@ -258,6 +259,34 @@
    }
    AuthLogoutDirectiveFactory.$inject = ['AuthService'];
 
+   /* @ngInject */
+   function AuthClassesDirectiveFactory(AuthService) {
+      var classes = (AuthService.isUserLoggedIn(), {
+         "loggedIn": "user-is-logged-in",
+         "notLoggedIn": "user-not-logged-in"
+      });
+      return {
+         "restrict": "A",
+         "scope": !1,
+         "link": function(iScope, iElement, iAttributes) {
+            function _toggleClass() {
+               if (AuthService.isUserLoggedIn()) {
+                  iAttributes.$addClass(classes.loggedIn);
+                  iAttributes.$removeClass(classes.notLoggedIn);
+               } else {
+                  iAttributes.$removeClass(classes.loggedIn);
+                  iAttributes.$addClass(classes.notLoggedIn);
+               }
+            }
+            _toggleClass();
+            iScope.$on(EVENTS.update, function() {
+               _toggleClass();
+            });
+         }
+      };
+   }
+   AuthClassesDirectiveFactory.$inject = ['AuthService'];
+
    var routes = {
       "login": "/users/login",
       "logout": "/users/logout",
@@ -286,8 +315,9 @@
       $rootScope.$on("$stateChangeError", function(event, toState, toParams, fromState, fromParams, error) {
          return 403 === error.statusCode || 401 === error.statusCode ? AuthServiceRedirect.set(toState, toParams) : void 0;
       });
+      window.pippo = AuthService;
       $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
-         if (!AuthService.authorize(toState)) {
+         if (!AuthService.authorize(toState, AuthService.getCurrentUser())) {
             var _isUserLoggedIn = AuthService.isUserLoggedIn();
             $rootScope.$broadcast("$stateChangeError", toState, toParams, fromState, fromParams, {
                "statusCode": _isUserLoggedIn ? 403 : 401,
@@ -304,8 +334,8 @@
          }
       });
       $rootScope.$on(EVENTS.update, function() {
-         var _isUserLoggedIn = AuthService.isUserLoggedIn();
-         return !AuthService.authorize($state.current) && _isUserLoggedIn ? $location.path("/") : AuthService.authorize($state.current) || _isUserLoggedIn ? void 0 : AuthServiceRedirect.otherwise();
+         var _isUserLoggedIn = AuthService.isUserLoggedIn(), currentUser = AuthService.getCurrentUser();
+         return _isUserLoggedIn && !AuthService.authorize($state.current, currentUser) ? $location.path("/") : _isUserLoggedIn || AuthService.authorize($state.current, currentUser) ? void 0 : AuthServiceRedirect.otherwise();
       });
    }]);
 
@@ -313,7 +343,7 @@
 
    angular.module("hitmands.auth").provider("AuthServiceRedirect", AuthServiceRedirectFactory);
 
-   angular.module("hitmands.auth").directive("authLogin", AuthLoginDirectiveFactory).directive("authLogout", AuthLogoutDirectiveFactory);
+   angular.module("hitmands.auth").directive("authLogin", AuthLoginDirectiveFactory).directive("authLogout", AuthLogoutDirectiveFactory).directive("authClasses", AuthClassesDirectiveFactory);
 //# sourceMappingURL=angular-hitmands-auth.js.map
 
 })(window, angular);
