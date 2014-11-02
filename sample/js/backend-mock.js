@@ -30,7 +30,7 @@
                var _user = null;
                for( var i = 0, len = mockedUsers.length; i < len; i++ ) {
                   if( mockedUsers[i].username === credentials.username && mockedUsers[i].password === credentials.password ) {
-                     _user = mockedUsers[i];
+                     _user = angular.copy(mockedUsers[i]);
                      if(credentials.rememberMe === true) {
                         try {
                            $window.sessionStorage.setItem(ssidKey, angular.toJson(_user));
@@ -66,8 +66,15 @@
             .respond(function( method, url, credentials, headers ) {
                credentials = angular.fromJson(credentials);
                var user = $hitmandsBackend.authorize(credentials);
+               var validResponse = [200, user, {'x-auth-token': user.token}];
 
-               return (angular.isObject(user)) ? [200, user] : [401, 'Unauthorized'];
+               try {
+                  delete user.token;
+               } catch (e) {
+                  user.token = null;
+               }
+
+               return (angular.isObject(user)) ? validResponse : [401, 'Unauthorized'];
             });
       })
    ;

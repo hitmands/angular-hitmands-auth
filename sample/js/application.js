@@ -9,10 +9,10 @@
             .useRoutes({
             otherwise: 'login'
          })
-            .setDataParser(function( data ) {
+            .setDataParser(function( data, headers, statusCode ) {
                return {
                   user: data,
-                  token: data.token
+                  token: headers['x-auth-token']
                };
             })
          ;
