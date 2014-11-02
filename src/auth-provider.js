@@ -3,27 +3,41 @@ function AuthProviderFactory( $httpProvider ) {
    var self = this;
    var currentUser = null;
    var authToken = null;
-   var routes = {
-      "login": '/users/login',
-      "logout": '/users/logout',
-      "fetch": '/users/me',
-      "authenticationRedirect": '/login'
+
+
+   /**
+    * @callback Requester~requestCallback - The callback that handles the response.
+    * @param {Object} data
+    * @param {Object} headers
+    * @returns {{user: Object, token: String}}
+    */
+   var _dataParser = function(data, headers, statusCode) {
+      return {
+         user: data,
+         token: data.token
+      };
    };
-   var EVENTS = {
-      login: {
-         success: 'hitmands.auth:login.resolved',
-         error: 'hitmands.auth:login.rejected'
-      },
-      logout: {
-         success: 'hitmands.auth:logout.resolved',
-         error: 'hitmands.auth:logout.rejected'
-      },
-      fetch: {
-         success: 'hitmands.auth:fetch.resolved',
-         error: 'hitmands.auth:fetch.rejected'
-      },
-      update: 'hitmands.auth:update'
+
+   /**
+    *
+    * @returns {Boolean}
+    * @private
+    */
+   var _isUserLoggedIn = function() {
+
+      return angular.isObject( self.getLoggedUser() );
    };
+
+   /**
+    *
+    * @returns {String}
+    * @private
+    */
+   var _getAuthToken = function() {
+      return authToken;
+   };
+
+
 
    /**
     *
@@ -38,7 +52,6 @@ function AuthProviderFactory( $httpProvider ) {
       return this;
    };
 
-
    /**
     *
     * Get the CurrentUser Object or Null
@@ -47,36 +60,6 @@ function AuthProviderFactory( $httpProvider ) {
    this.getLoggedUser = function AuthServiceLoggedUserGetter() {
 
       return currentUser;
-   };
-
-   /**
-    *
-    * @returns {Boolean}
-    * @private
-    */
-   var _isUserLoggedIn = function() {
-
-      return angular.isObject( self.getLoggedUser() );
-   };
-
-   var _getAuthToken = function() {
-      return authToken;
-   };
-
-   /**
-    *
-    * @param {Object|null} [user=null]
-    * @param {String|null} [authenticationToken=null]
-    */
-   this.setLoggedUser = function AuthServiceLoggedUserSetter( user, authenticationToken ) {
-      if( !angular.isObject( user ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
-         user = null;
-         authenticationToken = null;
-      }
-
-      currentUser = angular.copy(user);
-      authToken = authenticationToken;
-      return this;
    };
 
    /**
@@ -110,9 +93,37 @@ function AuthProviderFactory( $httpProvider ) {
       return this;
    };
 
+   /**
+    *
+    * @param {Object|null} [user=null]
+    * @param {String|null} [authenticationToken=null]
+    */
+   this.setLoggedUser = function AuthServiceLoggedUserSetter( user, authenticationToken ) {
+      if( !angular.isObject( user ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
+         user = null;
+         authenticationToken = null;
+      }
+
+      currentUser = angular.copy(user);
+      authToken = authenticationToken;
+      return this;
+   };
 
 
-   this.$get = function($rootScope, $q, $http, $state) {
+   /**
+    * @param {Requester~requestCallback} callback - The callback that handles the response.
+    */
+   this.setDataParser = function AuthServiceExpectDataAs( callback ) {
+      if( angular.isFunction(callback) ) {
+
+         _dataParser =  callback;
+      }
+
+      return this;
+   };
+
+
+   this.$get = function($rootScope, $q, $http, $exceptionHandler, $state) {
 
       /**
        *
@@ -125,6 +136,21 @@ function AuthProviderFactory( $httpProvider ) {
          $rootScope.$broadcast(EVENTS.update, self.getLoggedUser(), _isUserLoggedIn());
       };
 
+      /**
+       * @param parsedData
+       * @returns {{user: Object|null, token: string|null}}
+       */
+      var sanitizeParsedData = function( parsedData ) {
+         if( !angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
+            $exceptionHandler('AuthService.processServerData', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String}');
+
+            parsedData = {
+               user: null,
+               token: null
+            };
+         }
+         return parsedData;
+      };
 
       return {
 
@@ -140,7 +166,9 @@ function AuthProviderFactory( $httpProvider ) {
                .post(routes.login, credentials, { cache: false })
                .then(
                function( result ) {
-                  _setLoggedUser( result.data, result.data.token );
+                  var data = sanitizeParsedData( _dataParser(result.data, result.headers(), result.status) );
+
+                  _setLoggedUser( data.user, data.token );
                   $rootScope.$broadcast(EVENTS.login.success, result);
 
                   return result;
@@ -165,7 +193,9 @@ function AuthProviderFactory( $httpProvider ) {
                .get(routes.fetch, { cache: false })
                .then(
                function( result ) {
-                  _setLoggedUser( result.data, result.data.token );
+                  var data = sanitizeParsedData( _dataParser(result.data, result.headers(), result.status) );
+
+                  _setLoggedUser( data.user, data.token );
                   $rootScope.$broadcast(EVENTS.fetch.success, result);
 
                   return result;
@@ -206,6 +236,15 @@ function AuthProviderFactory( $httpProvider ) {
 
          /**
           *
+          * @param {Object} user
+          * @param {String} authenticationToken
+          */
+         setCurrentUser: function(user, authenticationToken) {
+            _setLoggedUser( user, authenticationToken );
+         },
+
+         /**
+          *
           * @returns {Object|Null} - Current User Data
           */
          getCurrentUser: function() {
@@ -239,16 +278,6 @@ function AuthProviderFactory( $httpProvider ) {
             }
 
             return ( (self.getLoggedUser().authLevel || 0) >= state.authLevel);
-         },
-
-         /**
-          *
-          * Redirects User to Authentication Route
-          * @returns void
-          */
-         authenticationRedirect: function() {
-
-            $state.transitionTo( routes.authenticationRedirect, {}, { inherit: false });
          },
 
          /**

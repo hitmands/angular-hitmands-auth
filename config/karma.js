@@ -21,6 +21,7 @@ module.exports = function(config) {
       'tests/**/*.js',
       'src/auth-module.js',
       'src/auth-provider.js',
+      'src/auth-redirect-service.js',
       'src/auth-directives.js'
     ],
 
@@ -70,6 +71,6 @@ module.exports = function(config) {
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun: true
+    singleRun: false
   });
 };

@@ -41,7 +41,10 @@ function AuthLogoutDirectiveFactory(AuthService) {
    };
 }
 
+
+
 angular
    .module('hitmands.auth')
    .directive('authLogin', AuthLoginDirectiveFactory)
-   .directive('authLogout', AuthLogoutDirectiveFactory);
+   .directive('authLogout', AuthLogoutDirectiveFactory)
+;

@@ -3,6 +3,7 @@ node_js:
   - "0.10"
 
 before_script:
+  - npm install -g istanbul
   - npm install -g karma
   - npm install -g karma-cli
   - npm install -g grunt-cli

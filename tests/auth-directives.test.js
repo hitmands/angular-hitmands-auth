@@ -1,4 +1,4 @@
-describe('Angular Module Hitmands-Auth:Directives', function() {
+ddescribe('Angular Module Hitmands-Auth:Directives', function() {
    'use strict';
    var $compile, $rootScope, $scope;
 
@@ -63,7 +63,7 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
    ));
 
 
-   it('Should not call logi', angular.mock.inject(
+   it('Should not call login', angular.mock.inject(
       function(AuthService) {
          spyOn(AuthService, 'login');
 

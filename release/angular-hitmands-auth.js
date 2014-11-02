@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2014-10-29
+ * @Date: 2014-11-02
  * @Version: 0.0.1
 ***/
 
@@ -12,25 +12,15 @@
 
    /* @ngInject */
    function AuthProviderFactory($httpProvider) {
-      var self = this, currentUser = null, authToken = null, routes = {
-         "login": "/users/login",
-         "logout": "/users/logout",
-         "fetch": "/users/me",
-         "authenticationRedirect": "/login"
-      }, EVENTS = {
-         "login": {
-            "success": "hitmands.auth:login.resolved",
-            "error": "hitmands.auth:login.rejected"
-         },
-         "logout": {
-            "success": "hitmands.auth:logout.resolved",
-            "error": "hitmands.auth:logout.rejected"
-         },
-         "fetch": {
-            "success": "hitmands.auth:fetch.resolved",
-            "error": "hitmands.auth:fetch.rejected"
-         },
-         "update": "hitmands.auth:update"
+      var self = this, currentUser = null, authToken = null, _dataParser = function(data) {
+         return {
+            "user": data,
+            "token": data.token
+         };
+      }, _isUserLoggedIn = function() {
+         return angular.isObject(self.getLoggedUser());
+      }, _getAuthToken = function() {
+         return authToken;
       };
       this.useRoutes = function(newRoutes) {
          angular.isObject(newRoutes) && (routes = angular.extend(routes, newRoutes));
@@ -38,20 +28,6 @@
       };
       this.getLoggedUser = function() {
          return currentUser;
-      };
-      var _isUserLoggedIn = function() {
-         return angular.isObject(self.getLoggedUser());
-      }, _getAuthToken = function() {
-         return authToken;
-      };
-      this.setLoggedUser = function(user, authenticationToken) {
-         if (!angular.isObject(user) || !angular.isString(authenticationToken) || authenticationToken.length < 1) {
-            user = null;
-            authenticationToken = null;
-         }
-         currentUser = angular.copy(user);
-         authToken = authenticationToken;
-         return this;
       };
       this.tokenizeHttp = function(tokenKey) {
          (!angular.isString(tokenKey) || tokenKey.length < 1) && (tokenKey = "X-AUTH-TOKEN");
@@ -65,17 +41,40 @@
          });
          return this;
       };
-      this.$get = ['$rootScope', '$q', '$http', '$state', function($rootScope, $q, $http, $state) {
+      this.setLoggedUser = function(user, authenticationToken) {
+         if (!angular.isObject(user) || !angular.isString(authenticationToken) || authenticationToken.length < 1) {
+            user = null;
+            authenticationToken = null;
+         }
+         currentUser = angular.copy(user);
+         authToken = authenticationToken;
+         return this;
+      };
+      this.setDataParser = function(callback) {
+         angular.isFunction(callback) && (_dataParser = callback);
+         return this;
+      };
+      this.$get = ['$rootScope', '$q', '$http', '$exceptionHandler', function($rootScope, $q, $http, $exceptionHandler) {
          var _setLoggedUser = function(newUserData, newAuthToken) {
             self.setLoggedUser(newUserData, newAuthToken);
             $rootScope.$broadcast(EVENTS.update, self.getLoggedUser(), _isUserLoggedIn());
+         }, sanitizeParsedData = function(parsedData) {
+            if (!angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
+               $exceptionHandler("AuthService.processServerData", "Invalid callback passed. The Callback must return an object like {user: Object, token: String}");
+               parsedData = {
+                  "user": null,
+                  "token": null
+               };
+            }
+            return parsedData;
          };
          return {
             "login": function(credentials) {
                return $http.post(routes.login, credentials, {
                   "cache": !1
                }).then(function(result) {
-                  _setLoggedUser(result.data, result.data.token);
+                  var data = sanitizeParsedData(_dataParser(result.data, result.headers(), result.status));
+                  _setLoggedUser(data.user, data.token);
                   $rootScope.$broadcast(EVENTS.login.success, result);
                   return result;
                }, function(error) {
@@ -88,7 +87,8 @@
                return $http.get(routes.fetch, {
                   "cache": !1
                }).then(function(result) {
-                  _setLoggedUser(result.data, result.data.token);
+                  var data = sanitizeParsedData(_dataParser(result.data, result.headers(), result.status));
+                  _setLoggedUser(data.user, data.token);
                   $rootScope.$broadcast(EVENTS.fetch.success, result);
                   return result;
                }, function(error) {
@@ -110,6 +110,9 @@
                   return error;
                });
             },
+            "setCurrentUser": function(user, authenticationToken) {
+               _setLoggedUser(user, authenticationToken);
+            },
             "getCurrentUser": function() {
                return self.getLoggedUser();
             },
@@ -119,11 +122,6 @@
             "authorize": function(state) {
                return !angular.isNumber(state.authLevel) || state.authLevel < 1 ? !0 : _isUserLoggedIn() ? (self.getLoggedUser().authLevel || 0) >= state.authLevel : !1;
             },
-            "authenticationRedirect": function() {
-               $state.transitionTo(routes.authenticationRedirect, {}, {
-                  "inherit": !1
-               });
-            },
             "getAuthenticationToken": function() {
                return _getAuthToken();
             }
@@ -131,6 +129,30 @@
       }];
    }
    AuthProviderFactory.$inject = ['$httpProvider'];
+
+   /* @ngInject */
+   function AuthServiceRedirectFactory() {
+      var state = null, params = null;
+      this.$get = ['$state', 'AuthService', function($state, AuthService) {
+         return {
+            "set": function(toState, toParams) {
+               state = toState;
+               params = toParams;
+            },
+            "unset": function() {
+               state = null;
+               params = null;
+            },
+            "go": function() {
+               angular.isObject(state) && AuthService.authorize(state) && $state.go(state, params);
+               this.unset();
+            },
+            "otherwise": function() {
+               return $state.go(routes.otherwise);
+            }
+         };
+      }];
+   }
 
    /* @ngInject */
    function AuthLoginDirectiveFactory(AuthService) {
@@ -160,22 +182,40 @@
    }
    AuthLogoutDirectiveFactory.$inject = ['AuthService'];
 
-   angular.module("hitmands.auth", [ "ui.router" ]).run(['$rootScope', 'AuthService', '$state', '$location', function($rootScope, AuthService, $state, $location) {
-      var afterLoginRedirectTo = null;
-      $rootScope.$on("hitmands.auth:login.resolved", function() {
-         angular.isObject(afterLoginRedirectTo) && AuthService.authorize(afterLoginRedirectTo.state) && $state.transitionTo(afterLoginRedirectTo.state.name, afterLoginRedirectTo.params);
-         afterLoginRedirectTo = null;
+   var routes = {
+      "login": "/users/login",
+      "logout": "/users/logout",
+      "fetch": "/users/me",
+      "otherwise": "/login"
+   }, EVENTS = {
+      "login": {
+         "success": "hitmands.auth:login.resolved",
+         "error": "hitmands.auth:login.rejected"
+      },
+      "logout": {
+         "success": "hitmands.auth:logout.resolved",
+         "error": "hitmands.auth:logout.rejected"
+      },
+      "fetch": {
+         "success": "hitmands.auth:fetch.resolved",
+         "error": "hitmands.auth:fetch.rejected"
+      },
+      "update": "hitmands.auth:update"
+   };
+
+   angular.module("hitmands.auth", [ "ui.router" ]).run(['$rootScope', 'AuthService', '$state', '$location', 'AuthServiceRedirect', function($rootScope, AuthService, $state, $location, AuthServiceRedirect) {
+      $rootScope.$on(EVENTS.login.success, function() {
+         return AuthServiceRedirect.go();
       });
-      $rootScope.$on("hitmands.auth:fetch.resolved", function() {
-         angular.isObject(afterLoginRedirectTo) && AuthService.authorize(afterLoginRedirectTo.state) && $state.transitionTo(afterLoginRedirectTo.state.name, afterLoginRedirectTo.params);
-         afterLoginRedirectTo = null;
+      $rootScope.$on("$stateChangeError", function(event, toState, toParams, fromState, fromParams, error) {
+         return 403 === error.statusCode || 401 === error.statusCode ? AuthServiceRedirect.set(toState, toParams) : void 0;
       });
       $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
          if (!AuthService.authorize(toState)) {
             var _isUserLoggedIn = AuthService.isUserLoggedIn();
             $rootScope.$broadcast("$stateChangeError", toState, toParams, fromState, fromParams, {
-               "statusCode": 403,
-               "statusText": "Forbidden",
+               "statusCode": _isUserLoggedIn ? 403 : 401,
+               "statusText": _isUserLoggedIn ? "Forbidden" : "Unauthorized",
                "isUserLoggedIn": _isUserLoggedIn
             });
             if (!fromState.name && _isUserLoggedIn) {
@@ -183,20 +223,19 @@
             }
             event.preventDefault();
             if (!fromState.name || !_isUserLoggedIn) {
-               afterLoginRedirectTo = {
-                  "state": toState,
-                  "params": toParams
-               };
-               return AuthService.authenticationRedirect();
+               return AuthServiceRedirect.otherwise();
             }
          }
       });
-      $rootScope.$on("hitmands.auth:update", function() {
-         AuthService.authorize($state.current) || AuthService.authenticationRedirect();
+      $rootScope.$on(EVENTS.update, function() {
+         var _isUserLoggedIn = AuthService.isUserLoggedIn();
+         return !AuthService.authorize($state.current) && _isUserLoggedIn ? $location.path("/") : AuthService.authorize($state.current) || _isUserLoggedIn ? void 0 : AuthServiceRedirect.otherwise();
       });
    }]);
 
    angular.module("hitmands.auth").provider("AuthService", AuthProviderFactory);
+
+   angular.module("hitmands.auth").provider("AuthServiceRedirect", AuthServiceRedirectFactory);
 
    angular.module("hitmands.auth").directive("authLogin", AuthLoginDirectiveFactory).directive("authLogout", AuthLogoutDirectiveFactory);
 //# sourceMappingURL=angular-hitmands-auth.js.map
