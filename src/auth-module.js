@@ -40,10 +40,11 @@ angular
          }
       });
 
+      window.pippo = AuthService;
 
       $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
 
-         if( !AuthService.authorize(toState) ) {
+         if( !AuthService.authorize(toState, AuthService.getCurrentUser()) ) {
             var _isUserLoggedIn = AuthService.isUserLoggedIn();
 
             $rootScope.$broadcast('$stateChangeError', toState, toParams, fromState, fromParams, {
@@ -68,12 +69,13 @@ angular
 
       $rootScope.$on(EVENTS.update, function(event, userData) {
          var _isUserLoggedIn = AuthService.isUserLoggedIn();
+         var currentUser = AuthService.getCurrentUser();
 
-         if( !AuthService.authorize($state.current) && _isUserLoggedIn) {
+         if( _isUserLoggedIn && !AuthService.authorize($state.current, currentUser) ) {
             return $location.path('/');
          }
 
-         if( !AuthService.authorize($state.current) && !_isUserLoggedIn ) {
+         if( !_isUserLoggedIn && !AuthService.authorize($state.current, currentUser) ) {
             return AuthServiceRedirect.otherwise();
          }
       });

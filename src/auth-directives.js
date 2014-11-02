@@ -42,9 +42,43 @@ function AuthLogoutDirectiveFactory(AuthService) {
 }
 
 
+/* @ngInject */
+function AuthClassesDirectiveFactory(AuthService) {
+   var _isUserLoggedIn = AuthService.isUserLoggedIn();
+   var classes = {
+      loggedIn: 'user-is-logged-in',
+      notLoggedIn: 'user-not-logged-in'
+   };
+
+   return {
+      restrict: 'A',
+      scope: false,
+      link: function(iScope, iElement, iAttributes) {
+         function _toggleClass() {
+
+            if( AuthService.isUserLoggedIn() ) {
+               iAttributes.$addClass(classes.loggedIn);
+               iAttributes.$removeClass(classes.notLoggedIn);
+            } else {
+               iAttributes.$removeClass(classes.loggedIn);
+               iAttributes.$addClass(classes.notLoggedIn);
+            }
+
+         }
+
+         _toggleClass();
+         iScope.$on(EVENTS.update, function() {
+            _toggleClass();
+         });
+
+      }
+   };
+}
+
 
 angular
    .module('hitmands.auth')
    .directive('authLogin', AuthLoginDirectiveFactory)
    .directive('authLogout', AuthLogoutDirectiveFactory)
+   .directive('authClasses', AuthClassesDirectiveFactory)
 ;

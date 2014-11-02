@@ -270,12 +270,16 @@ function AuthProviderFactory( $httpProvider ) {
          /**
           * @preserve
           * @param {Object} state
+          * @param {Object} [user = currentUser]
           * @returns {Boolean} Is the CurrentUser Authorized for State?
           */
-         authorize: function( state ) {
-
+         authorize: function( state, user ) {
             if( !angular.isNumber(state.authLevel) || state.authLevel < 1) {
                return true;
+            }
+
+            if( angular.isObject(user) ) {
+               return ( (user.authLevel || 0) >= state.authLevel);
             }
 
             if( !_isUserLoggedIn() ) {
