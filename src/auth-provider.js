@@ -1,47 +1,46 @@
 /* @ngInject */
 function AuthProviderFactory( $httpProvider ) {
-   var self = this;
-   var currentUser = null;
-   var authToken = null;
-
-
    /**
+    * @preserve
     * @callback Requester~requestCallback - The callback that handles the response.
-    * @param {Object} data
-    * @param {Object} headers
-    * @returns {{user: Object, token: String}}
     */
-   var _dataParser = function(data, headers, statusCode) {
+   var _dataParser = function (data, headers, statusCode) {
       return {
          user: data,
          token: data.token
       };
    };
 
+   var self = this;
+   var currentUser = null;
+   var authToken = null;
+
+
    /**
     *
     * @returns {Boolean}
     * @private
     */
-   var _isUserLoggedIn = function() {
+   function _isUserLoggedIn() {
 
       return angular.isObject( self.getLoggedUser() );
-   };
+   }
 
    /**
     *
     * @returns {String}
     * @private
     */
-   var _getAuthToken = function() {
+   function _getAuthToken() {
       return authToken;
-   };
+   }
 
 
 
    /**
-    *
     * Extends Used Routes
+    *
+    * @preserve
     * @param {Object} [newRoutes = {login: String, logout: String, fetch: String, authRedirect: String}]
     */
    this.useRoutes = function AuthServiceRoutesListGetterSetter( newRoutes ) {
@@ -53,8 +52,9 @@ function AuthProviderFactory( $httpProvider ) {
    };
 
    /**
-    *
     * Get the CurrentUser Object or Null
+    *
+    * @preserve
     * @returns {Object|null}
     */
    this.getLoggedUser = function AuthServiceLoggedUserGetter() {
@@ -63,8 +63,9 @@ function AuthProviderFactory( $httpProvider ) {
    };
 
    /**
-    *
     * Appends Authentication Token to all $httpRequests
+    *
+    * @preserve
     * @param {String} tokenKey - The Name of Key
     */
    this.tokenizeHttp = function AuthServiceTokenizeHttp( tokenKey ) {
@@ -94,7 +95,7 @@ function AuthProviderFactory( $httpProvider ) {
    };
 
    /**
-    *
+    * @preserve
     * @param {Object|null} [user=null]
     * @param {String|null} [authenticationToken=null]
     */
@@ -111,6 +112,7 @@ function AuthProviderFactory( $httpProvider ) {
 
 
    /**
+    * @preserve
     * @param {Requester~requestCallback} callback - The callback that handles the response.
     */
    this.setDataParser = function AuthServiceExpectDataAs( callback ) {
@@ -126,21 +128,21 @@ function AuthProviderFactory( $httpProvider ) {
    this.$get = function($rootScope, $q, $http, $exceptionHandler, $state) {
 
       /**
-       *
        * @param {Object|null} newUserData
        * @param {String|null} newAuthToken
        * @private
        */
-      var _setLoggedUser = function( newUserData, newAuthToken ) {
+      function _setLoggedUser( newUserData, newAuthToken ) {
          self.setLoggedUser( newUserData, newAuthToken );
          $rootScope.$broadcast(EVENTS.update, self.getLoggedUser(), _isUserLoggedIn());
-      };
+      }
 
       /**
        * @param parsedData
        * @returns {{user: Object|null, token: string|null}}
+       * @private
        */
-      var sanitizeParsedData = function( parsedData ) {
+      function _sanitizeParsedData( parsedData ) {
          if( !angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
             $exceptionHandler('AuthService.processServerData', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String}');
 
@@ -150,13 +152,14 @@ function AuthProviderFactory( $httpProvider ) {
             };
          }
          return parsedData;
-      };
+      }
 
       return {
 
          /**
+          * Performs Login Request and sets the Auth Data
           *
-          * Performs Login Request
+          * @preserve
           * @param {{username: String, password: String, rememberMe: Boolean}} credentials
           * @returns {ng.IPromise}
           */
@@ -166,7 +169,7 @@ function AuthProviderFactory( $httpProvider ) {
                .post(routes.login, credentials, { cache: false })
                .then(
                function( result ) {
-                  var data = sanitizeParsedData( _dataParser(result.data, result.headers(), result.status) );
+                  var data = _sanitizeParsedData( _dataParser(result.data, result.headers(), result.status) );
 
                   _setLoggedUser( data.user, data.token );
                   $rootScope.$broadcast(EVENTS.login.success, result);
@@ -183,8 +186,9 @@ function AuthProviderFactory( $httpProvider ) {
          },
 
          /**
+          * Updates the Auth Data
           *
-          * Updates the CurrentUser Object
+          * @preserve
           * @returns {ng.IPromise}
           */
          fetchLoggedUser: function() {
@@ -193,7 +197,7 @@ function AuthProviderFactory( $httpProvider ) {
                .get(routes.fetch, { cache: false })
                .then(
                function( result ) {
-                  var data = sanitizeParsedData( _dataParser(result.data, result.headers(), result.status) );
+                  var data = _sanitizeParsedData( _dataParser(result.data, result.headers(), result.status) );
 
                   _setLoggedUser( data.user, data.token );
                   $rootScope.$broadcast(EVENTS.fetch.success, result);
@@ -210,8 +214,9 @@ function AuthProviderFactory( $httpProvider ) {
          },
 
          /**
-          *
           * Performs Logout request
+          *
+          * @preserve
           * @returns {ng.IPromise}
           */
          logout: function() {
@@ -235,7 +240,7 @@ function AuthProviderFactory( $httpProvider ) {
          },
 
          /**
-          *
+          * @preserve
           * @param {Object} user
           * @param {String} authenticationToken
           */
@@ -244,7 +249,7 @@ function AuthProviderFactory( $httpProvider ) {
          },
 
          /**
-          *
+          * @preserve
           * @returns {Object|Null} - Current User Data
           */
          getCurrentUser: function() {
@@ -253,7 +258,7 @@ function AuthProviderFactory( $httpProvider ) {
          },
 
          /**
-          *
+          * @preserve
           * Checks if the user is logged in
           * @returns {Boolean}
           */
@@ -263,7 +268,7 @@ function AuthProviderFactory( $httpProvider ) {
          },
 
          /**
-          *
+          * @preserve
           * @param {Object} state
           * @returns {Boolean} Is the CurrentUser Authorized for State?
           */
@@ -281,7 +286,7 @@ function AuthProviderFactory( $httpProvider ) {
          },
 
          /**
-          *
+          * @preserve
           * @returns {String|Null} - The Authentication Token
           */
          getAuthenticationToken: function() {
