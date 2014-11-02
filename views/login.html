@@ -1,0 +1,77 @@
+<div class="container" ng-switch="isUserLoggedIn">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="page-header ellipsis">
+                <h1 class="ellipsis">Example login Page</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" ng-switch-when="true">
+        <div class="col-xs-12">
+            <p><strong>Howdy</strong>, {{ currentUser.displayName }}</p>
+            <div class="btn-group btn-group-lg" style="padding: 2em 0;">
+                <button type="button" class="btn btn-success btn-lg" ui-sref="app">
+                    Back to Home
+                </button>
+                <button type="button" class="btn btn-danger btn-lg" auth-logout="">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" ng-switch-default>
+        <div class="col-xs-12 text-center">
+            <form name="loginForm" auth-login="fields" class="form-inline" role="form" autocomplete novalidate>
+                <div class="form-group" style="margin-left: 10px;">
+                    <label class="sr-only" for="exampleInputEmail2">Username</label>
+                    <input ng-model="fields.username" type="text" class="form-control" id="exampleInputEmail2" placeholder="Enter Username">
+                </div>
+                <div class="form-group" style="margin-left: 10px;">
+                    <label class="sr-only" for="exampleInputPassword2">Password</label>
+                    <input ng-model="fields.password" type="password" class="form-control" id="exampleInputPassword2" placeholder="Password">
+                </div>
+                <div class="checkbox" style="margin-left: 10px;">
+                    <label>
+                        <input type="checkbox" ng-model="fields.rememberMe"> Remember me
+                    </label>
+                </div>
+                <button style="margin-left: 10px;" type="submit" class="btn btn-default">Login</button>
+            </form>
+        </div>
+    </div>
+    <div class="row" >
+        <div class="col-xs-12 " style="padding-top: 4em;">
+            <table class="table table-striped table-hover">
+                <thead>
+                <tr>
+                    <th ><span class="text-info">You can Login as:</span></th>
+                    <th colspan="2" class="text-right">
+                        <div class="btn-group btn-group-xs">
+                            <button ng-click="reRands()" class="btn btn-primary">Random Users</button>
+                            <button ng-click="randomLogin()" class="btn btn-warning">Random Login Directly</button>
+                        </div>
+                    </th>
+                </tr>
+                <tr>
+                    <th style="color: #999; font-weight: lighter; text-transform: uppercase">username</th>
+                    <th style="color: #999; font-weight: lighter; text-transform: uppercase">password</th>
+                    <th style="color: #999; font-weight: lighter; text-transform: uppercase">Role</th>
+                </tr>
+                </thead>
+                <tbody class="">
+                <tr ng-show="isUserLoggedIn">
+                    <td colspan="2" class="info"><strong>{{ currentUser.username }}</strong></td>
+                    <td><strong>{{ currentUser.authLevel | role }}</strong></td>
+                </tr>
+                <tr ng-repeat="user in loginSamples track by $index">
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.password }}</td>
+                    <td >{{ user.authLevel | role }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
