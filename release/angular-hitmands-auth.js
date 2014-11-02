@@ -1,34 +1,45 @@
-/**!
- * @Project: angular-hitmands-auth
- * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
- * @Link: https://github.com/hitmands/angular-hitmands-auth
- * @License: MIT
- * @Date: 2014-11-02
- * @Version: 0.0.1
-***/
-
 (function(window, angular) {
    'use strict';
 
    /* @ngInject */
    function AuthProviderFactory($httpProvider) {
+      function _isUserLoggedIn() {
+         return angular.isObject(self.getLoggedUser());
+      }
+      function _getAuthToken() {
+         return authToken;
+      }
       var self = this, currentUser = null, authToken = null, _dataParser = function(data) {
          return {
             "user": data,
             "token": data.token
          };
-      }, _isUserLoggedIn = function() {
-         return angular.isObject(self.getLoggedUser());
-      }, _getAuthToken = function() {
-         return authToken;
       };
+      /**
+    * Extends Used Routes
+    *
+    * @preserve
+    * @param {Object} [newRoutes = {login: String, logout: String, fetch: String, authRedirect: String}]
+    */
       this.useRoutes = function(newRoutes) {
          angular.isObject(newRoutes) && (routes = angular.extend(routes, newRoutes));
          return this;
       };
+      /**
+    * Get the CurrentUser Object or Null
+    *
+    * @preserve
+    * @returns {Object|null}
+    */
       this.getLoggedUser = function() {
          return currentUser;
       };
+      /**
+    * Appends Authentication Token to all $httpRequests
+    *
+    * @preserve
+    * @param {String} tokenKey - The Name of Key
+    */
       this.tokenizeHttp = function(tokenKey) {
          (!angular.isString(tokenKey) || tokenKey.length < 1) && (tokenKey = "X-AUTH-TOKEN");
          $httpProvider.interceptors.push(function() {
@@ -41,6 +52,11 @@
          });
          return this;
       };
+      /**
+    * @preserve
+    * @param {Object|null} [user=null]
+    * @param {String|null} [authenticationToken=null]
+    */
       this.setLoggedUser = function(user, authenticationToken) {
          if (!angular.isObject(user) || !angular.isString(authenticationToken) || authenticationToken.length < 1) {
             user = null;
@@ -50,11 +66,21 @@
          authToken = authenticationToken;
          return this;
       };
+      /**
+    * @preserve
+    * @param {Requester~requestCallback} callback - The callback that handles the response.
+    */
       this.setDataParser = function(callback) {
          angular.isFunction(callback) && (_dataParser = callback);
          return this;
       };
       this.$get = ['$rootScope', '$q', '$http', '$exceptionHandler', function($rootScope, $q, $http, $exceptionHandler) {
+         /**
+       * @preserve
+       * @param {Object|null} newUserData
+       * @param {String|null} newAuthToken
+       * @private
+       */
          var _setLoggedUser = function(newUserData, newAuthToken) {
             self.setLoggedUser(newUserData, newAuthToken);
             $rootScope.$broadcast(EVENTS.update, self.getLoggedUser(), _isUserLoggedIn());
@@ -69,6 +95,13 @@
             return parsedData;
          };
          return {
+            /**
+          * Performs Login Request and sets the Auth Data
+          *
+          * @preserve
+          * @param {{username: String, password: String, rememberMe: Boolean}} credentials
+          * @returns {ng.IPromise}
+          */
             "login": function(credentials) {
                return $http.post(routes.login, credentials, {
                   "cache": !1
@@ -83,6 +116,12 @@
                   return error;
                });
             },
+            /**
+          * Updates the Auth Data
+          *
+          * @preserve
+          * @returns {ng.IPromise}
+          */
             "fetchLoggedUser": function() {
                return $http.get(routes.fetch, {
                   "cache": !1
@@ -97,6 +136,12 @@
                   return error;
                });
             },
+            /**
+          * Performs Logout request
+          *
+          * @preserve
+          * @returns {ng.IPromise}
+          */
             "logout": function() {
                return $http.post(routes.logout, null, {
                   "cache": !1
@@ -110,18 +155,41 @@
                   return error;
                });
             },
+            /**
+          * @preserve
+          * @param {Object} user
+          * @param {String} authenticationToken
+          */
             "setCurrentUser": function(user, authenticationToken) {
                _setLoggedUser(user, authenticationToken);
             },
+            /**
+          * @preserve
+          * @returns {Object|Null} - Current User Data
+          */
             "getCurrentUser": function() {
                return self.getLoggedUser();
             },
+            /**
+          * @preserve
+          * Checks if the user is logged in
+          * @returns {Boolean}
+          */
             "isUserLoggedIn": function() {
                return _isUserLoggedIn();
             },
+            /**
+          * @preserve
+          * @param {Object} state
+          * @returns {Boolean} Is the CurrentUser Authorized for State?
+          */
             "authorize": function(state) {
                return !angular.isNumber(state.authLevel) || state.authLevel < 1 ? !0 : _isUserLoggedIn() ? (self.getLoggedUser().authLevel || 0) >= state.authLevel : !1;
             },
+            /**
+          * @preserve
+          * @returns {String|Null} - The Authentication Token
+          */
             "getAuthenticationToken": function() {
                return _getAuthToken();
             }

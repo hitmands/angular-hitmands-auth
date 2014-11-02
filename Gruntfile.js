@@ -99,10 +99,10 @@ module.exports = function(grunt) {
                banner: "(function(window, angular) {\n   'use strict';\n",
                footer: '\n\n})(window, angular);',
                preserveComments: function(node, comment) {
-                  var commentsWhiteList = /(jshint|@ngInject)/g;
+                  var whiteList = /(jshint|@ngInject|@preserve)/g;
                   var keepComment = false;
 
-                  if( commentsWhiteList.test(comment.value) ) {
+                  if( whiteList.test(comment.value) ) {
                      keepComment = true;
                   }
 
