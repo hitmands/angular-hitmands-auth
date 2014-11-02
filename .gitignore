@@ -26,4 +26,5 @@ dump.rdb
 
 /bower_components/
 /src/vendor
+/sample
 /sample/js/fixtures/data_beta.json-generator.com.js
