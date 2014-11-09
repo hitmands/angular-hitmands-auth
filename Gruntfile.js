@@ -1,7 +1,8 @@
 module.exports = function(grunt) {
    'use strict';
    require('jit-grunt')(grunt, {
-      "ngtemplates" : "grunt-angular-templates"
+      "ngtemplates" : "grunt-angular-templates",
+      "comments" : "grunt-stripcomments"
    });
 
    var pkg = grunt.file.readJSON('package.json');
@@ -170,6 +171,16 @@ module.exports = function(grunt) {
          }
       },
 
+      comments: {
+         release: {
+            options: {
+               singleline: true,
+               multiline: true
+            },
+            src: [ 'release/**/*.js']
+         }
+      },
+
       watch: {
          compile: {
             tasks: ['default'],
@@ -201,9 +212,16 @@ module.exports = function(grunt) {
          'newer:jshint:frontend'
       ]
    );
+
    grunt.registerTask('sample',
       [
          'ngtemplates'
+      ]
+   );
+
+   grunt.registerTask('stripJavascriptComments',
+      [
+         'comments:release'
       ]
    );
 
