@@ -44,7 +44,6 @@ function AuthLogoutDirectiveFactory(AuthService) {
 
 /* @ngInject */
 function AuthClassesDirectiveFactory(AuthService) {
-   var _isUserLoggedIn = AuthService.isUserLoggedIn();
    var classes = {
       loggedIn: 'user-is-logged-in',
       notLoggedIn: 'user-not-logged-in'

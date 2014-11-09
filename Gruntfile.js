@@ -106,10 +106,6 @@ module.exports = function(grunt) {
                      keepComment = true;
                   }
 
-                  //if( comment.type = 'comment2') {
-                  //   keepComment = true;
-                  //}
-
                   return keepComment;
                }
             },

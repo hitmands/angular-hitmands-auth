@@ -1,4 +1,4 @@
-ddescribe('Angular Module Hitmands-Auth:Directives', function() {
+describe('Angular Module Hitmands-Auth:Directives', function() {
    'use strict';
    var $compile, $rootScope, $scope;
 
@@ -7,10 +7,18 @@ ddescribe('Angular Module Hitmands-Auth:Directives', function() {
       validCredentials: {
          username: 'hitmands',
          password: 'asdasd'
+      },
+      user: {
+         username: 'Hitmands',
+         id: 1,
+         slug: 'giuseppe-mandato',
+         name: 'Giuseppe',
+         surname: 'Mandato',
+         token: '697b84c9c82f9abc6a80359c9125d293'
       }
    };
 
-   var loginForm, logoutButton;
+   var loginForm, logoutButton, authClassesElement;
 
    // Arrange (Set Up Scenario)
    beforeEach(function() {
@@ -39,11 +47,26 @@ ddescribe('Angular Module Hitmands-Auth:Directives', function() {
 
          logoutButton = '<button id="logoutBtn" auth-logout>Logout</button>';
 
-
-
+         authClassesElement = '<div id="auth-classes-element" auth-classes><div/>';
       }
    ));
 
+
+   it('Should toggle element classes when user is or isn\'t logged-in', angular.mock.inject(
+      function(AuthService) {
+         angular.element(document.body).append($compile(authClassesElement)($scope));
+         $scope.$digest();
+
+         var authClassesDomElement = document.getElementById('auth-classes-element');
+
+         expect(authClassesDomElement.className).toContain('user-not-logged-in');
+
+         AuthService.setCurrentUser(Mocks.user, Mocks.user.token);
+         $scope.$digest();
+
+         expect(authClassesDomElement.className).toContain('user-is-logged-in');
+      }
+   ));
 
    it('Should Login directive Call AuthService.login Method', angular.mock.inject(
       function(AuthService) {

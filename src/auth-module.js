@@ -31,16 +31,16 @@ angular
    .run(function($rootScope, AuthService, $state, $location, AuthServiceRedirect, $stateParams, $q) {
 
       $rootScope.$on(EVENTS.login.success, function() {
-         return AuthServiceRedirect.go();
-      });
-
-      $rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
-         if( error.statusCode === 403 || error.statusCode === 401 ) {
-            return AuthServiceRedirect.set(toState, toParams);
+         if( AuthServiceRedirect.isSetted() ) {
+            return AuthServiceRedirect.go();
          }
       });
 
-      window.pippo = AuthService;
+      $rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
+         if( error.publisher === 'AuthService.authorize' && (error.statusCode === 403 || error.statusCode === 401) ) {
+            return AuthServiceRedirect.set(toState, toParams);
+         }
+      });
 
       $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
 
@@ -50,24 +50,23 @@ angular
             $rootScope.$broadcast('$stateChangeError', toState, toParams, fromState, fromParams, {
                statusCode: _isUserLoggedIn ? 403 : 401,
                statusText: _isUserLoggedIn ? 'Forbidden' : 'Unauthorized',
-               isUserLoggedIn: _isUserLoggedIn
+               isUserLoggedIn: _isUserLoggedIn,
+               publisher: 'AuthService.authorize'
             });
-
-            if( !fromState.name && _isUserLoggedIn ) {
-               return $location.path('/');
-            }
-
             event.preventDefault();
 
+            if( !fromState.name && _isUserLoggedIn ) {
+               AuthServiceRedirect.goHome();
+            }
 
-            if( !fromState.name || !_isUserLoggedIn ) {
+            if( !fromState.name && !_isUserLoggedIn ) {
                return AuthServiceRedirect.otherwise();
             }
 
          }
       });
 
-      $rootScope.$on(EVENTS.update, function(event, userData) {
+      $rootScope.$on(EVENTS.update, function(event) {
          var _isUserLoggedIn = AuthService.isUserLoggedIn();
          var currentUser = AuthService.getCurrentUser();
 

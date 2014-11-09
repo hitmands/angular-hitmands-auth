@@ -32,6 +32,7 @@ function AuthProviderFactory( $httpProvider ) {
     * @private
     */
    function _getAuthToken() {
+
       return authToken;
    }
 
@@ -70,7 +71,7 @@ function AuthProviderFactory( $httpProvider ) {
     */
    this.tokenizeHttp = function AuthServiceTokenizeHttp( tokenKey ) {
       if( !angular.isString(tokenKey) || tokenKey.length < 1 ) {
-         tokenKey = 'X-AUTH-TOKEN';
+         tokenKey = 'x-auth-token';
       }
 
       $httpProvider.interceptors.push(function($q) {
@@ -100,7 +101,8 @@ function AuthProviderFactory( $httpProvider ) {
     * @param {String|null} [authenticationToken=null]
     */
    this.setLoggedUser = function AuthServiceLoggedUserSetter( user, authenticationToken ) {
-      if( !angular.isObject( user ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
+      if( angular.isArray(user) || !angular.isObject( user ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
+
          user = null;
          authenticationToken = null;
       }
@@ -144,7 +146,7 @@ function AuthProviderFactory( $httpProvider ) {
        */
       function _sanitizeParsedData( parsedData ) {
          if( !angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
-            $exceptionHandler('AuthService.processServerData', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String}');
+            $exceptionHandler('AuthService.setDataParser', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String}');
 
             parsedData = {
                user: null,
@@ -245,7 +247,19 @@ function AuthProviderFactory( $httpProvider ) {
           * @param {String} authenticationToken
           */
          setCurrentUser: function(user, authenticationToken) {
+            if( angular.isArray(user) || !angular.isObject( user ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
+               return;
+            }
+
+
             _setLoggedUser( user, authenticationToken );
+         },
+
+         /**
+          * @preserve
+          */
+         unsetCurrentUser: function() {
+            _setLoggedUser( null, null );
          },
 
          /**
@@ -274,6 +288,10 @@ function AuthProviderFactory( $httpProvider ) {
           * @returns {Boolean} Is the CurrentUser Authorized for State?
           */
          authorize: function( state, user ) {
+            if( angular.isArray(state) || !angular.isObject(state) ) {
+               $exceptionHandler('AuthService.authorize', 'first params must be ui.router state');
+               return false;
+            }
             if( !angular.isNumber(state.authLevel) || state.authLevel < 1) {
                return true;
             }

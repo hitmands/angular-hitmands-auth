@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2014-11-02
+ * @Date: 2014-11-09
  * @Version: 0.0.1
 ***/
 
@@ -54,7 +54,7 @@
     * @param {String} tokenKey - The Name of Key
     */
       this.tokenizeHttp = function(tokenKey) {
-         (!angular.isString(tokenKey) || tokenKey.length < 1) && (tokenKey = "X-AUTH-TOKEN");
+         (!angular.isString(tokenKey) || tokenKey.length < 1) && (tokenKey = "x-auth-token");
          $httpProvider.interceptors.push(function() {
             return {
                "request": function(config) {
@@ -71,7 +71,7 @@
     * @param {String|null} [authenticationToken=null]
     */
       this.setLoggedUser = function(user, authenticationToken) {
-         if (!angular.isObject(user) || !angular.isString(authenticationToken) || authenticationToken.length < 1) {
+         if (angular.isArray(user) || !angular.isObject(user) || !angular.isString(authenticationToken) || authenticationToken.length < 1) {
             user = null;
             authenticationToken = null;
          }
@@ -94,7 +94,7 @@
          }
          function _sanitizeParsedData(parsedData) {
             if (!angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
-               $exceptionHandler("AuthService.processServerData", "Invalid callback passed. The Callback must return an object like {user: Object, token: String}");
+               $exceptionHandler("AuthService.setDataParser", "Invalid callback passed. The Callback must return an object like {user: Object, token: String}");
                parsedData = {
                   "user": null,
                   "token": null
@@ -169,7 +169,13 @@
           * @param {String} authenticationToken
           */
             "setCurrentUser": function(user, authenticationToken) {
-               _setLoggedUser(user, authenticationToken);
+               angular.isArray(user) || !angular.isObject(user) || !angular.isString(authenticationToken) || authenticationToken.length < 1 || _setLoggedUser(user, authenticationToken);
+            },
+            /**
+          * @preserve
+          */
+            "unsetCurrentUser": function() {
+               _setLoggedUser(null, null);
             },
             /**
           * @preserve
@@ -193,6 +199,10 @@
           * @returns {Boolean} Is the CurrentUser Authorized for State?
           */
             "authorize": function(state, user) {
+               if (angular.isArray(state) || !angular.isObject(state)) {
+                  $exceptionHandler("AuthService.authorize", "first params must be ui.router state");
+                  return !1;
+               }
                return !angular.isNumber(state.authLevel) || state.authLevel < 1 ? !0 : angular.isObject(user) ? (user.authLevel || 0) >= state.authLevel : _isUserLoggedIn() ? (self.getLoggedUser().authLevel || 0) >= state.authLevel : !1;
             },
             /**
@@ -210,22 +220,45 @@
    /* @ngInject */
    function AuthServiceRedirectFactory() {
       var state = null, params = null;
-      this.$get = ['$state', 'AuthService', function($state, AuthService) {
+      this.$get = ['$state', 'AuthService', '$rootScope', '$location', function($state, AuthService, $rootScope, $location) {
+         var _unsetRedirect = function() {
+            state = null;
+            params = null;
+         }, _getRedirect = function() {
+            return {
+               "state": state,
+               "params": params
+            };
+         };
+         $rootScope.$on("$stateChangeSuccess", function(event, toState) {
+            toState.name !== routes.login && _unsetRedirect();
+         });
          return {
             "set": function(toState, toParams) {
-               state = toState;
-               params = toParams;
+               if (!angular.isArray(toState) && angular.isObject(toState)) {
+                  angular.isUndefined(toParams) && (toParams = {});
+                  state = toState;
+                  params = toParams;
+               }
+            },
+            "get": function() {
+               return _getRedirect();
+            },
+            "isSetted": function() {
+               return angular.isObject(_getRedirect().state);
             },
             "unset": function() {
-               state = null;
-               params = null;
+               _unsetRedirect();
             },
             "go": function() {
                angular.isObject(state) && AuthService.authorize(state) && $state.go(state, params);
-               this.unset();
+               _unsetRedirect();
             },
             "otherwise": function() {
                return $state.go(routes.otherwise);
+            },
+            "goHome": function() {
+               return $location.path("/");
             }
          };
       }];
@@ -261,10 +294,10 @@
 
    /* @ngInject */
    function AuthClassesDirectiveFactory(AuthService) {
-      var classes = (AuthService.isUserLoggedIn(), {
+      var classes = {
          "loggedIn": "user-is-logged-in",
          "notLoggedIn": "user-not-logged-in"
-      });
+      };
       return {
          "restrict": "A",
          "scope": !1,
@@ -310,25 +343,23 @@
 
    angular.module("hitmands.auth", [ "ui.router" ]).run(['$rootScope', 'AuthService', '$state', '$location', 'AuthServiceRedirect', function($rootScope, AuthService, $state, $location, AuthServiceRedirect) {
       $rootScope.$on(EVENTS.login.success, function() {
-         return AuthServiceRedirect.go();
+         return AuthServiceRedirect.isSetted() ? AuthServiceRedirect.go() : void 0;
       });
       $rootScope.$on("$stateChangeError", function(event, toState, toParams, fromState, fromParams, error) {
-         return 403 === error.statusCode || 401 === error.statusCode ? AuthServiceRedirect.set(toState, toParams) : void 0;
+         return "AuthService.authorize" !== error.publisher || 403 !== error.statusCode && 401 !== error.statusCode ? void 0 : AuthServiceRedirect.set(toState, toParams);
       });
-      window.pippo = AuthService;
       $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
          if (!AuthService.authorize(toState, AuthService.getCurrentUser())) {
             var _isUserLoggedIn = AuthService.isUserLoggedIn();
             $rootScope.$broadcast("$stateChangeError", toState, toParams, fromState, fromParams, {
                "statusCode": _isUserLoggedIn ? 403 : 401,
                "statusText": _isUserLoggedIn ? "Forbidden" : "Unauthorized",
-               "isUserLoggedIn": _isUserLoggedIn
+               "isUserLoggedIn": _isUserLoggedIn,
+               "publisher": "AuthService.authorize"
             });
-            if (!fromState.name && _isUserLoggedIn) {
-               return $location.path("/");
-            }
             event.preventDefault();
-            if (!fromState.name || !_isUserLoggedIn) {
+            !fromState.name && _isUserLoggedIn && AuthServiceRedirect.goHome();
+            if (!fromState.name && !_isUserLoggedIn) {
                return AuthServiceRedirect.otherwise();
             }
          }
