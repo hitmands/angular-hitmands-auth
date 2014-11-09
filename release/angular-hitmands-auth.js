@@ -1,12 +1,3 @@
-/**!
- * @Project: angular-hitmands-auth
- * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
- * @Link: https://github.com/hitmands/angular-hitmands-auth
- * @License: MIT
- * @Date: 2014-11-09
- * @Version: 0.0.1
-***/
-
 (function(window, angular) {
    'use strict';
 
