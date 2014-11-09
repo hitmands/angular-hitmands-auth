@@ -1,7 +1,8 @@
 module.exports = function(grunt) {
    'use strict';
-   grunt.loadNpmTasks('grunt-angular-templates');
-   require('jit-grunt')(grunt);
+   require('jit-grunt')(grunt, {
+      "ngtemplates" : "grunt-angular-templates"
+   });
 
    var pkg = grunt.file.readJSON('package.json');
    var fixtures = {
