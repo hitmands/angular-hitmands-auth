@@ -206,8 +206,7 @@ module.exports = function(grunt) {
          'uglify:development',
          'ngAnnotate',
          'uglify:production',
-         'concat:bannerize',
-         'sample'
+         'concat:bannerize'
       ]
    );
 
