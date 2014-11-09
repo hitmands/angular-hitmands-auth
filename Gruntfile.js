@@ -162,6 +162,11 @@ module.exports = function(grunt) {
                   dest: './release/angular-hitmands-auth.min.js'
                }
             ]
+         },
+         mvLcov: {
+            src: './coverage/PhantomJS 1.9.8 (Mac OS X)/lcov.info',
+            dest : './lcov.info',
+            nonull: true
          }
       },
 
