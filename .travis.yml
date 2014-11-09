@@ -13,7 +13,6 @@ before_script:
 script:
   - bower install
   - grunt release
-  - grunt comments:release
   - karma start config/karma.js --no-auto-watch --single-run
 
 addons:
