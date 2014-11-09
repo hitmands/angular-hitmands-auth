@@ -20,7 +20,7 @@ addons:
     repo_token: 26927a8c0f4396bc55ee423a1c0df10cb09a6ee6bf838d4edc32df2432a069da
 
 after_script:
-  - cat coverage/PhantomJS 1.9.8 (Mac OS X)/lcov.info | codeclimate
+  - cat "coverage/PhantomJS 1.9.8 (Mac OS X)/lcov.info" | codeclimate
 
 git:
   depth: 10
