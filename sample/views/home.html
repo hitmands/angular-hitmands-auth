@@ -1,0 +1,35 @@
+<div class="container">
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="jumbotron">
+                <h1 class="ellipsis">Angular Hitmands Auth</h1>
+                <div ng-show="isUserLoggedIn">
+                    <p><strong>Howdy</strong>, {{ currentUser.displayName }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row ">
+        <div class="col-sm-9 ">
+
+            <div class="row " ng-repeat="post in tutorial.posts" id="{{ ::post.slug }}">
+                <div class="col-xs-12 ">
+                    <div class="well">
+                        <h1 class="tutorial-title">{{ ::post.title }}</h1>
+                        <p ng-bind-html="::post.content"></p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-sm-3">
+            <div class="well well-locked" follow-scroll="225" ng-class="{ 'lock' : (lock === true) }">
+                <div class="list-group">
+                    <a ng-repeat="post in tutorial.posts" class="list-group-item" ng-click="tutorial.goToPost(post.slug)">{{ ::post.title }}</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
