@@ -7,8 +7,7 @@
 var routes = {
    "login": '/users/login',
    "logout": '/users/logout',
-   "fetch": '/users/me',
-   "otherwise": '/login'
+   "fetch": '/users/me'
 };
 var EVENTS = {
    login: {
@@ -26,57 +25,40 @@ var EVENTS = {
    update: 'hitmands.auth:update'
 };
 
-angular
-   .module('hitmands.auth', ['ui.router'])
-   .run(function($rootScope, AuthService, $state, $location, AuthServiceRedirect, $stateParams, $q) {
+/* @ngInject */
+function moduleRun($rootScope, AuthService, $state, $location) {
+   $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
 
-      $rootScope.$on(EVENTS.login.success, function() {
-         if( AuthServiceRedirect.isSetted() ) {
-            return AuthServiceRedirect.go();
-         }
-      });
-
-      $rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
-         if( error.publisher === 'AuthService.authorize' && (error.statusCode === 403 || error.statusCode === 401) ) {
-            return AuthServiceRedirect.set(toState, toParams);
-         }
-      });
-
-      $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
-
-         if( !AuthService.authorize(toState, AuthService.getCurrentUser()) ) {
-            var _isUserLoggedIn = AuthService.isUserLoggedIn();
-
-            $rootScope.$broadcast('$stateChangeError', toState, toParams, fromState, fromParams, {
-               statusCode: _isUserLoggedIn ? 403 : 401,
-               statusText: _isUserLoggedIn ? 'Forbidden' : 'Unauthorized',
-               isUserLoggedIn: _isUserLoggedIn,
-               publisher: 'AuthService.authorize'
-            });
-            event.preventDefault();
-
-            if( !fromState.name && _isUserLoggedIn ) {
-               AuthServiceRedirect.goHome();
-            }
-
-            if( !fromState.name && !_isUserLoggedIn ) {
-               return AuthServiceRedirect.otherwise();
-            }
-
-         }
-      });
-
-      $rootScope.$on(EVENTS.update, function(event) {
+      if( !AuthService.authorize(toState, AuthService.getCurrentUser()) ) {
          var _isUserLoggedIn = AuthService.isUserLoggedIn();
-         var currentUser = AuthService.getCurrentUser();
 
-         if( _isUserLoggedIn && !AuthService.authorize($state.current, currentUser) ) {
+         $rootScope.$broadcast('$stateChangeError', toState, toParams, fromState, fromParams, {
+            statusCode: _isUserLoggedIn ? 403 : 401,
+            statusText: _isUserLoggedIn ? 'Forbidden' : 'Unauthorized',
+            isUserLoggedIn: _isUserLoggedIn,
+            publisher: 'AuthService.authorize'
+         });
+
+         if( !fromState.name ) {
             return $location.path('/');
          }
 
-         if( !_isUserLoggedIn && !AuthService.authorize($state.current, currentUser) ) {
-            return AuthServiceRedirect.otherwise();
-         }
-      });
-
+         alert('ciao');
+         event.preventDefault();
+      }
    });
+
+   $rootScope.$on(EVENTS.update, function(event) {
+      if( !AuthService.isUserLoggedIn() && !AuthService.authorize($state.current, AuthService.getCurrentUser()) ) {
+         return $location.path('/');
+      }
+   });
+}
+
+angular
+   .module('hitmands.auth', ['ui.router'])
+   .provider('AuthService', AuthProviderFactory)
+   .directive('authLogin', AuthLoginDirectiveFactory)
+   .directive('authLogout', AuthLogoutDirectiveFactory)
+   .directive('authClasses', AuthClassesDirectiveFactory)
+   .run(moduleRun);

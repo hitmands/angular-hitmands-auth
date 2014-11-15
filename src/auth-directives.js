@@ -73,11 +73,3 @@ function AuthClassesDirectiveFactory(AuthService) {
       }
    };
 }
-
-
-angular
-   .module('hitmands.auth')
-   .directive('authLogin', AuthLoginDirectiveFactory)
-   .directive('authLogout', AuthLogoutDirectiveFactory)
-   .directive('authClasses', AuthClassesDirectiveFactory)
-;

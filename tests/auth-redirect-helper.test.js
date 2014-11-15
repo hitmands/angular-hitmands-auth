@@ -1,7 +1,7 @@
 describe('Angular Module Hitmands-Auth:AuthService', function() {
    'use strict';
 
-   var AuthServiceProvider, $rootScope, $scope, $exceptionHandlerProvider;
+   var AuthServiceProvider, AuthRedirectHelperProvider, $rootScope, $scope, $exceptionHandlerProvider;
 
 
    // Authentication Test Cases
@@ -35,10 +35,11 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
    };
 
    beforeEach(function() {
-      angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_, _$exceptionHandlerProvider_, $stateProvider ) {
+      angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_, _$exceptionHandlerProvider_, $stateProvider, _AuthRedirectHelperProvider_ ) {
          AuthServiceProvider = _AuthServiceProvider_;
          $exceptionHandlerProvider = _$exceptionHandlerProvider_;
          $exceptionHandlerProvider = $exceptionHandlerProvider.mode('log');
+         AuthRedirectHelperProvider = _AuthRedirectHelperProvider_;
          $stateProvider
             .state(Mocks.states.public)
             .state(Mocks.states.admin);
@@ -52,66 +53,66 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
       }
    ));
 
-   it('Should Have a Working AuthServiceRedirect', angular.mock.inject(
-      function(AuthServiceRedirect, AuthService) {
+   it('Should Have a Working AuthRedirectHelper', angular.mock.inject(
+      function(AuthRedirectHelper, AuthService) {
 
-         expect(AuthServiceRedirect).toBeDefined();
-         expect(AuthServiceRedirect.set).toEqual( jasmine.any(Function) );
-         expect(AuthServiceRedirect.unset).toEqual( jasmine.any(Function) );
-         expect(AuthServiceRedirect.go).toEqual( jasmine.any(Function) );
-         expect(AuthServiceRedirect.otherwise).toEqual( jasmine.any(Function) );
+         expect(AuthRedirectHelper).toBeDefined();
+         expect(AuthRedirectHelper.set).toEqual( jasmine.any(Function) );
+         expect(AuthRedirectHelper.unset).toEqual( jasmine.any(Function) );
+         expect(AuthRedirectHelper.go).toEqual( jasmine.any(Function) );
+         expect(AuthRedirectHelper.otherwise).toEqual( jasmine.any(Function) );
       }
    ));
 
    it('Should not set redirect if call set without parameters', angular.mock.inject(
-      function(AuthServiceRedirect) {
-         AuthServiceRedirect.set();
-         expect(AuthServiceRedirect.get().state).toBeNull();
-         expect(AuthServiceRedirect.get().params).toBeNull();
+      function(AuthRedirectHelper) {
+         AuthRedirectHelper.set();
+         expect(AuthRedirectHelper.get().state).toBeNull();
+         expect(AuthRedirectHelper.get().params).toBeNull();
       }
    ));
 
    it('Should set redirect if call set with correct parameters', angular.mock.inject(
-      function(AuthServiceRedirect) {
-         AuthServiceRedirect.set(Mocks.states.public);
-         expect(AuthServiceRedirect.get().state).toEqual(Mocks.states.public);
-         expect(AuthServiceRedirect.get().params).toEqual( jasmine.any(Object) );
+      function(AuthRedirectHelper) {
+         AuthRedirectHelper.set(Mocks.states.public);
+         expect(AuthRedirectHelper.get().state).toEqual(Mocks.states.public);
+         expect(AuthRedirectHelper.get().params).toEqual( jasmine.any(Object) );
 
-         AuthServiceRedirect.set(Mocks.states.public, { param: 'AnyParam' });
-         expect(AuthServiceRedirect.get().state).toEqual(Mocks.states.public);
-         expect(AuthServiceRedirect.get().params).toEqual( { param: 'AnyParam' } );
+         AuthRedirectHelper.set(Mocks.states.public, { param: 'AnyParam' });
+         expect(AuthRedirectHelper.get().state).toEqual(Mocks.states.public);
+         expect(AuthRedirectHelper.get().params).toEqual( { param: 'AnyParam' } );
       }
    ));
 
    it('Should unset Redirect', angular.mock.inject(
-      function(AuthServiceRedirect) {
-         AuthServiceRedirect.set(Mocks.states.public);
-         expect(AuthServiceRedirect.get().state).toEqual(Mocks.states.public);
+      function(AuthRedirectHelper) {
+         AuthRedirectHelper.set(Mocks.states.public);
+         expect(AuthRedirectHelper.get().state).toEqual(Mocks.states.public);
 
-         AuthServiceRedirect.unset();
-         expect(AuthServiceRedirect.get().state).toBeNull();
-         expect(AuthServiceRedirect.get().params).toBeNull();
+         AuthRedirectHelper.unset();
+         expect(AuthRedirectHelper.get().state).toBeNull();
+         expect(AuthRedirectHelper.get().params).toBeNull();
       }
    ));
 
    it('Should set Redirect and go to setted Redirect', angular.mock.inject(
-      function(AuthServiceRedirect, $state) {
-         AuthServiceRedirect.set(Mocks.states.public);
+      function(AuthRedirectHelper, $state) {
+         AuthRedirectHelper.set(Mocks.states.public);
          expect($state.current.name).not.toEqual(Mocks.states.public.name);
-         AuthServiceRedirect.go();
+         AuthRedirectHelper.go();
          $scope.$digest();
          expect($state.current.name).toEqual(Mocks.states.public.name);
       }
    ));
 
    it('Should go to otherwise', angular.mock.inject(
-      function(AuthServiceRedirect, $state) {
-         AuthServiceProvider.useRoutes({
+      function(AuthRedirectHelper, $state) {
+         AuthRedirectHelperProvider.useRoutes({
             otherwise: Mocks.states.public.name
          });
 
          expect($state.current.name).not.toEqual(Mocks.states.public.name);
-         AuthServiceRedirect.otherwise();
+         AuthRedirectHelper.otherwise();
          $scope.$digest();
          expect($state.current.name).toEqual(Mocks.states.public.name);
       }

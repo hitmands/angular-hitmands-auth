@@ -75,6 +75,10 @@ module.exports = function(grunt) {
                {
                   src: './release/angular-hitmands-auth.js',
                   dest: './release/angular-hitmands-auth.js'
+               },
+               {
+                  src: './release/angular-hitmands-auth-redirect-helper.js',
+                  dest: './release/angular-hitmands-auth-redirect-helper.js'
                }
             ]
          }
@@ -114,12 +118,15 @@ module.exports = function(grunt) {
             files: [
                {
                   src: [
-                     './src/*-module.js',
-                     './src/*-provider.js',
-                     './src/*-service.js',
-                     './src/*-directives.js'
+                     './src/auth-module.js',
+                     './src/auth-provider.js',
+                     './src/auth-directives.js'
                   ],
                   dest: './release/angular-hitmands-auth.js'
+               },
+               {
+                  src: './src/auth-redirect-helper.js',
+                  dest: './release/angular-hitmands-auth-redirect-helper.js'
                }
             ]
          },
@@ -143,6 +150,10 @@ module.exports = function(grunt) {
                {
                   src: './release/angular-hitmands-auth.js',
                   dest: './release/angular-hitmands-auth.min.js'
+               },
+               {
+                  src: './release/angular-hitmands-auth-redirect-helper.js',
+                  dest: './release/angular-hitmands-auth-redirect-helper.min.js'
                }
             ]
          }
@@ -161,6 +172,10 @@ module.exports = function(grunt) {
                {
                   src: './release/angular-hitmands-auth.min.js',
                   dest: './release/angular-hitmands-auth.min.js'
+               },
+               {
+                  src: './release/angular-hitmands-auth-redirect-helper.js',
+                  dest: './release/angular-hitmands-auth-redirect-helper.min.js'
                }
             ]
          },
@@ -235,4 +250,3 @@ module.exports = function(grunt) {
    );
 
 };
-

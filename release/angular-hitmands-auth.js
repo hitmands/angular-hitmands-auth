@@ -1,5 +1,38 @@
+/**!
+ * @Project: angular-hitmands-auth
+ * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
+ * @Link: https://github.com/hitmands/angular-hitmands-auth
+ * @License: MIT
+ * @Date: 2014-11-15
+ * @Version: 0.0.1
+***/
+
 (function(window, angular) {
    'use strict';
+
+   /* @ngInject */
+   function moduleRun($rootScope, AuthService, $state, $location) {
+      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
+         if (!AuthService.authorize(toState, AuthService.getCurrentUser())) {
+            var _isUserLoggedIn = AuthService.isUserLoggedIn();
+            $rootScope.$broadcast("$stateChangeError", toState, toParams, fromState, fromParams, {
+               "statusCode": _isUserLoggedIn ? 403 : 401,
+               "statusText": _isUserLoggedIn ? "Forbidden" : "Unauthorized",
+               "isUserLoggedIn": _isUserLoggedIn,
+               "publisher": "AuthService.authorize"
+            });
+            if (!fromState.name) {
+               return $location.path("/");
+            }
+            alert("ciao");
+            event.preventDefault();
+         }
+      });
+      $rootScope.$on(EVENTS.update, function() {
+         return AuthService.isUserLoggedIn() || AuthService.authorize($state.current, AuthService.getCurrentUser()) ? void 0 : $location.path("/");
+      });
+   }
+   moduleRun.$inject = ['$rootScope', 'AuthService', '$state', '$location'];
 
    /* @ngInject */
    function AuthProviderFactory($httpProvider) {
@@ -78,7 +111,7 @@
          angular.isFunction(callback) && (_dataParser = callback);
          return this;
       };
-      this.$get = ['$rootScope', '$q', '$http', '$exceptionHandler', function($rootScope, $q, $http, $exceptionHandler) {
+      this.$get = ['$rootScope', '$http', '$exceptionHandler', function($rootScope, $http, $exceptionHandler) {
          function _setLoggedUser(newUserData, newAuthToken) {
             self.setLoggedUser(newUserData, newAuthToken);
             $rootScope.$broadcast(EVENTS.update, self.getLoggedUser(), _isUserLoggedIn());
@@ -209,53 +242,6 @@
    AuthProviderFactory.$inject = ['$httpProvider'];
 
    /* @ngInject */
-   function AuthServiceRedirectFactory() {
-      var state = null, params = null;
-      this.$get = ['$state', 'AuthService', '$rootScope', '$location', function($state, AuthService, $rootScope, $location) {
-         var _unsetRedirect = function() {
-            state = null;
-            params = null;
-         }, _getRedirect = function() {
-            return {
-               "state": state,
-               "params": params
-            };
-         };
-         $rootScope.$on("$stateChangeSuccess", function(event, toState) {
-            toState.name !== routes.login && _unsetRedirect();
-         });
-         return {
-            "set": function(toState, toParams) {
-               if (!angular.isArray(toState) && angular.isObject(toState)) {
-                  angular.isUndefined(toParams) && (toParams = {});
-                  state = toState;
-                  params = toParams;
-               }
-            },
-            "get": function() {
-               return _getRedirect();
-            },
-            "isSetted": function() {
-               return angular.isObject(_getRedirect().state);
-            },
-            "unset": function() {
-               _unsetRedirect();
-            },
-            "go": function() {
-               angular.isObject(state) && AuthService.authorize(state) && $state.go(state, params);
-               _unsetRedirect();
-            },
-            "otherwise": function() {
-               return $state.go(routes.otherwise);
-            },
-            "goHome": function() {
-               return $location.path("/");
-            }
-         };
-      }];
-   }
-
-   /* @ngInject */
    function AuthLoginDirectiveFactory(AuthService) {
       var _form = null;
       return {
@@ -314,8 +300,7 @@
    var routes = {
       "login": "/users/login",
       "logout": "/users/logout",
-      "fetch": "/users/me",
-      "otherwise": "/login"
+      "fetch": "/users/me"
    }, EVENTS = {
       "login": {
          "success": "hitmands.auth:login.resolved",
@@ -332,40 +317,7 @@
       "update": "hitmands.auth:update"
    };
 
-   angular.module("hitmands.auth", [ "ui.router" ]).run(['$rootScope', 'AuthService', '$state', '$location', 'AuthServiceRedirect', function($rootScope, AuthService, $state, $location, AuthServiceRedirect) {
-      $rootScope.$on(EVENTS.login.success, function() {
-         return AuthServiceRedirect.isSetted() ? AuthServiceRedirect.go() : void 0;
-      });
-      $rootScope.$on("$stateChangeError", function(event, toState, toParams, fromState, fromParams, error) {
-         return "AuthService.authorize" !== error.publisher || 403 !== error.statusCode && 401 !== error.statusCode ? void 0 : AuthServiceRedirect.set(toState, toParams);
-      });
-      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
-         if (!AuthService.authorize(toState, AuthService.getCurrentUser())) {
-            var _isUserLoggedIn = AuthService.isUserLoggedIn();
-            $rootScope.$broadcast("$stateChangeError", toState, toParams, fromState, fromParams, {
-               "statusCode": _isUserLoggedIn ? 403 : 401,
-               "statusText": _isUserLoggedIn ? "Forbidden" : "Unauthorized",
-               "isUserLoggedIn": _isUserLoggedIn,
-               "publisher": "AuthService.authorize"
-            });
-            event.preventDefault();
-            !fromState.name && _isUserLoggedIn && AuthServiceRedirect.goHome();
-            if (!fromState.name && !_isUserLoggedIn) {
-               return AuthServiceRedirect.otherwise();
-            }
-         }
-      });
-      $rootScope.$on(EVENTS.update, function() {
-         var _isUserLoggedIn = AuthService.isUserLoggedIn(), currentUser = AuthService.getCurrentUser();
-         return _isUserLoggedIn && !AuthService.authorize($state.current, currentUser) ? $location.path("/") : _isUserLoggedIn || AuthService.authorize($state.current, currentUser) ? void 0 : AuthServiceRedirect.otherwise();
-      });
-   }]);
-
-   angular.module("hitmands.auth").provider("AuthService", AuthProviderFactory);
-
-   angular.module("hitmands.auth").provider("AuthServiceRedirect", AuthServiceRedirectFactory);
-
-   angular.module("hitmands.auth").directive("authLogin", AuthLoginDirectiveFactory).directive("authLogout", AuthLogoutDirectiveFactory).directive("authClasses", AuthClassesDirectiveFactory);
+   angular.module("hitmands.auth", [ "ui.router" ]).provider("AuthService", AuthProviderFactory).directive("authLogin", AuthLoginDirectiveFactory).directive("authLogout", AuthLogoutDirectiveFactory).directive("authClasses", AuthClassesDirectiveFactory).run(moduleRun);
 //# sourceMappingURL=angular-hitmands-auth.js.map
 
 })(window, angular);

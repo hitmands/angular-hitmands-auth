@@ -19,7 +19,8 @@ module.exports = function(config) {
          'src/vendor/angular-mocks/angular-mocks.js',
          'src/vendor/angular-ui-router/release/angular-ui-router.js',
          'tests/**/*.js',
-         'release/angular-hitmands-auth.js'
+         'release/angular-hitmands-auth.js',
+         'release/angular-hitmands-auth-redirect-helper.js'
       ],
 
 

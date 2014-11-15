@@ -1,7 +1,19 @@
+var routes = {
+   "otherwise": "login"
+};
+
 /* @ngInject */
-function AuthServiceRedirectFactory() {
+function AuthRedirectHelper() {
    var state = null;
    var params = null;
+
+   this.useRoutes = function AuthRedirectHelperUseRoutesSetter(newRoutes) {
+      if( angular.isArray(newRoutes) || !angular.isObject(newRoutes) ) {
+         return;
+      }
+
+      angular.extend(routes, newRoutes)
+   };
 
    this.$get = function($state, AuthService, $rootScope, $location) {
 
@@ -35,18 +47,22 @@ function AuthServiceRedirectFactory() {
             state  = toState;
             params = toParams;
          },
+
          get: function() {
 
             return _getRedirect();
          },
+
          isSetted: function() {
 
             return angular.isObject(_getRedirect().state);
          },
+
          unset: function() {
 
             _unsetRedirect();
          },
+
          go: function() {
             if( angular.isObject(state) && AuthService.authorize(state) ) {
                $state.go(state, params);
@@ -54,10 +70,12 @@ function AuthServiceRedirectFactory() {
 
             _unsetRedirect();
          },
+
          otherwise: function() {
 
             return $state.go(routes.otherwise);
          },
+
          goHome: function() {
 
             return $location.path('/');
@@ -65,9 +83,12 @@ function AuthServiceRedirectFactory() {
 
       };
    };
-
 }
+
+/* @ngInject */
+function moduleRun() {}
 
 angular
    .module('hitmands.auth')
-   .provider('AuthServiceRedirect', AuthServiceRedirectFactory);
+   .provider('AuthRedirectHelper', AuthRedirectHelper)
+   .run(moduleRun);

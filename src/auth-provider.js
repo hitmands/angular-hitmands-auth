@@ -74,7 +74,7 @@ function AuthProviderFactory( $httpProvider ) {
          tokenKey = 'x-auth-token';
       }
 
-      $httpProvider.interceptors.push(function($q) {
+      $httpProvider.interceptors.push(function() {
 
          return {
             request: function(config) {
@@ -127,7 +127,7 @@ function AuthProviderFactory( $httpProvider ) {
    };
 
 
-   this.$get = function($rootScope, $q, $http, $exceptionHandler, $state) {
+   this.$get = function($rootScope, $http, $exceptionHandler) {
 
       /**
        * @param {Object|null} newUserData
@@ -319,7 +319,3 @@ function AuthProviderFactory( $httpProvider ) {
       };
    };
 }
-
-angular
-   .module('hitmands.auth')
-   .provider('AuthService', AuthProviderFactory);
