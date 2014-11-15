@@ -245,7 +245,8 @@ module.exports = function(grunt) {
          'uglify:development',
          'ngAnnotate',
          'uglify:production',
-         'concat:bannerize'
+         'concat:bannerize',
+         'concat:mvLcov'
       ]
    );
 
