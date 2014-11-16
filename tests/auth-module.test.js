@@ -1,6 +1,6 @@
-xdescribe('Angular Module Hitmands-Auth', function() {
+ddescribe('Angular Module Hitmands-Auth', function() {
    'use strict';
-   var $httpBackend, $rootScope, AuthRedirectHelperProvider, httpLoginHandler, httpLogoutHandler, $controller, AuthServiceProvider, spyAuthService, getController;
+   var $httpBackend, $rootScope, httpLoginHandler, httpLogoutHandler, $controller, AuthServiceProvider, spyAuthService, getController;
 
    // Authentication Test Cases
    var Mocks = {
@@ -23,10 +23,12 @@ xdescribe('Angular Module Hitmands-Auth', function() {
       states: {
          admin: {
             name: 'admin',
+            url: 'admin',
             authLevel: 1000
          },
          public: {
             name: 'public',
+            url: 'public',
             authLevel: 0
          }
       }
@@ -34,9 +36,8 @@ xdescribe('Angular Module Hitmands-Auth', function() {
 
    // Arrange (Set Up Scenario)
    beforeEach(function() {
-      angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthRedirectHelperProvider_, _AuthServiceProvider_, $stateProvider ) {
+      angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_, $stateProvider ) {
          AuthServiceProvider = _AuthServiceProvider_;
-         AuthRedirectHelperProvider = _AuthRedirectHelperProvider_;
 
          $stateProvider
             .state(Mocks.states.public)
@@ -71,32 +72,30 @@ xdescribe('Angular Module Hitmands-Auth', function() {
    ));
 
 
-   it('AuthService.authorize Should broadcast StateChangeError when no users are logged-in', angular.mock.inject(
-      function(AuthService, AuthRedirectHelper, $state) {
+   it('Testing Service on $stateChangeStart event', angular.mock.inject(
+      function(AuthService, $state, $location) {
+
+         expect(AuthService.isUserLoggedIn()).toBeFalsy();
 
          $state.transitionTo(Mocks.states.admin.name);
          $rootScope.$digest();
 
-         console.log(AuthService.authorize(), 'pippo');
          expect(AuthService.authorize).toHaveBeenCalled();
-         expect($state.current.name).toEqual(Mocks.states.public.name);
+         expect($state.current.name).not.toEqual(Mocks.states.admin.name);
       }
    ));
 
    it('AuthService.authorize Should broadcast StateChangeError when no users are logged-in', angular.mock.inject(
-      function(AuthService, AuthRedirectHelper, $state) {
-         AuthServiceProvider.useRoutes({
-            otherwise: 'public'
-         });
+      function(AuthService,  $state) {
 
-         Mocks.user.authLevel = 10;
+         Mocks.user.authLevel = 1000; // giving permission
          AuthService.setCurrentUser(Mocks.user, Mocks.user.token);
+         expect(AuthService.isUserLoggedIn()).toBeTruthy();
 
          $state.transitionTo(Mocks.states.admin.name);
          $rootScope.$digest();
 
-         expect($state.current.name).not.toEqual(Mocks.states.admin.name);
-         expect($state.current.name).not.toEqual(Mocks.states.public.name);
+         expect($state.current.name).toEqual(Mocks.states.admin.name);
       }
    ));
 

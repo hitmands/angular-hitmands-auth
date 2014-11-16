@@ -1,4 +1,4 @@
-describe('Angular Module Hitmands-Auth:AuthService.setDataParser', function() {
+describe('Angular Module Hitmands-Auth:AuthService.defineModel', function() {
    'use strict';
    var $httpBackend, $rootScope, $controller, AuthServiceProvider, $exceptionHandlerProvider;
 
@@ -27,7 +27,7 @@ describe('Angular Module Hitmands-Auth:AuthService.setDataParser', function() {
       beforeEach(function() {
          angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_ ) {
             AuthServiceProvider = _AuthServiceProvider_;
-            AuthServiceProvider.setDataParser('invalidParameterType');
+            AuthServiceProvider.defineModel('invalidParameterType');
          });
       });
 
@@ -40,7 +40,7 @@ describe('Angular Module Hitmands-Auth:AuthService.setDataParser', function() {
       ));
 
 
-      it('AuthServiceProvider.setDataParser doesn\'t take effect', angular.mock.inject(
+      it('AuthServiceProvider.defineModel doesn\'t take effect', angular.mock.inject(
             function(AuthService, $http) {
 
                expect(AuthService.getCurrentUser()).toBeNull();
@@ -59,7 +59,7 @@ describe('Angular Module Hitmands-Auth:AuthService.setDataParser', function() {
             $exceptionHandlerProvider = _$exceptionHandlerProvider_;
             $exceptionHandlerProvider = $exceptionHandlerProvider.mode('log');
             AuthServiceProvider = _AuthServiceProvider_;
-            AuthServiceProvider.setDataParser(function(data, headers, status) {
+            AuthServiceProvider.defineModel(function(data, headers, status) {
                return {
                   user: data,
                   token: {}
@@ -77,7 +77,7 @@ describe('Angular Module Hitmands-Auth:AuthService.setDataParser', function() {
       ));
 
 
-      it('AuthServiceProvider.setDataParser should obtain Exception', angular.mock.inject(
+      it('AuthServiceProvider.defineModel should obtain Exception', angular.mock.inject(
             function(AuthService, $http, $exceptionHandler) {
                expect(AuthService.getCurrentUser()).toBeNull();
 
@@ -88,7 +88,7 @@ describe('Angular Module Hitmands-Auth:AuthService.setDataParser', function() {
                $httpBackend.flush();
 
                expect($exceptionHandler.errors).toContain([
-                  'AuthService.setDataParser',
+                  'AuthService.defineModel',
                   'Invalid callback passed. The Callback must return an object like {user: Object, token: String}'
                ]);
 
@@ -103,7 +103,7 @@ describe('Angular Module Hitmands-Auth:AuthService.setDataParser', function() {
       beforeEach(function() {
          angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_) {
             AuthServiceProvider = _AuthServiceProvider_;
-            AuthServiceProvider.setDataParser(function(data, headers, status) {
+            AuthServiceProvider.defineModel(function(data, headers, status) {
                return {
                   user: data[0],
                   token: data[1]
@@ -121,7 +121,7 @@ describe('Angular Module Hitmands-Auth:AuthService.setDataParser', function() {
       ));
 
 
-      it('AuthServiceProvider.setDataParser should overwrite default dataParser', angular.mock.inject(
+      it('AuthServiceProvider.defineModel should overwrite default dataParser', angular.mock.inject(
             function(AuthService, $http) {
 
                expect(AuthService.getCurrentUser()).toBeNull();

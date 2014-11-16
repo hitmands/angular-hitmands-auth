@@ -5,6 +5,7 @@ function AuthProviderFactory( $httpProvider ) {
     * @callback Requester~requestCallback - The callback that handles the response.
     */
    var _dataParser = function (data, headers, statusCode) {
+
       return {
          user: data,
          token: data.token
@@ -117,7 +118,7 @@ function AuthProviderFactory( $httpProvider ) {
     * @preserve
     * @param {Requester~requestCallback} callback - The callback that handles the response.
     */
-   this.setDataParser = function AuthServiceExpectDataAs( callback ) {
+   this.defineModel = function AuthServiceExpectDataAs( callback ) {
       if( angular.isFunction(callback) ) {
 
          _dataParser =  callback;
@@ -136,7 +137,7 @@ function AuthProviderFactory( $httpProvider ) {
        */
       function _setLoggedUser( newUserData, newAuthToken ) {
          self.setLoggedUser( newUserData, newAuthToken );
-         $rootScope.$broadcast(EVENTS.update, self.getLoggedUser(), _isUserLoggedIn());
+         $rootScope.$broadcast(EVENTS.update);
       }
 
       /**
@@ -146,7 +147,7 @@ function AuthProviderFactory( $httpProvider ) {
        */
       function _sanitizeParsedData( parsedData ) {
          if( !angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
-            $exceptionHandler('AuthService.setDataParser', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String}');
+            $exceptionHandler('AuthService.defineModel', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String}');
 
             parsedData = {
                user: null,

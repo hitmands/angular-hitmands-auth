@@ -52,7 +52,7 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
          expect(AuthServiceProvider.setLoggedUser).toEqual( jasmine.any(Function) );
          expect(AuthServiceProvider.getLoggedUser).toEqual( jasmine.any(Function) );
          expect(AuthServiceProvider.tokenizeHttp).toEqual( jasmine.any(Function) );
-         expect(AuthServiceProvider.setDataParser).toEqual( jasmine.any(Function) );
+         expect(AuthServiceProvider.defineModel).toEqual( jasmine.any(Function) );
          expect(AuthServiceProvider.useRoutes).toEqual( jasmine.any(Function) );
 
          expect(AuthService).toBeDefined();

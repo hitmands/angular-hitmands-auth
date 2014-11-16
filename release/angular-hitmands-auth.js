@@ -1,12 +1,3 @@
-/**!
- * @Project: angular-hitmands-auth
- * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
- * @Link: https://github.com/hitmands/angular-hitmands-auth
- * @License: MIT
- * @Date: 2014-11-15
- * @Version: 0.0.1
-***/
-
 (function(window, angular) {
    'use strict';
 
@@ -15,21 +6,18 @@
       $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
          if (!AuthService.authorize(toState, AuthService.getCurrentUser())) {
             var _isUserLoggedIn = AuthService.isUserLoggedIn();
+            event.preventDefault();
             $rootScope.$broadcast("$stateChangeError", toState, toParams, fromState, fromParams, {
                "statusCode": _isUserLoggedIn ? 403 : 401,
                "statusText": _isUserLoggedIn ? "Forbidden" : "Unauthorized",
                "isUserLoggedIn": _isUserLoggedIn,
                "publisher": "AuthService.authorize"
             });
-            if (!fromState.name) {
-               return $location.path("/");
-            }
-            alert("ciao");
-            event.preventDefault();
+            fromState.name || $location.path("/");
          }
       });
       $rootScope.$on(EVENTS.update, function() {
-         return AuthService.isUserLoggedIn() || AuthService.authorize($state.current, AuthService.getCurrentUser()) ? void 0 : $location.path("/");
+         AuthService.authorize($state.current, AuthService.getCurrentUser()) || $location.path("/");
       });
    }
    moduleRun.$inject = ['$rootScope', 'AuthService', '$state', '$location'];
@@ -107,18 +95,18 @@
     * @preserve
     * @param {Requester~requestCallback} callback - The callback that handles the response.
     */
-      this.setDataParser = function(callback) {
+      this.defineModel = function(callback) {
          angular.isFunction(callback) && (_dataParser = callback);
          return this;
       };
       this.$get = ['$rootScope', '$http', '$exceptionHandler', function($rootScope, $http, $exceptionHandler) {
          function _setLoggedUser(newUserData, newAuthToken) {
             self.setLoggedUser(newUserData, newAuthToken);
-            $rootScope.$broadcast(EVENTS.update, self.getLoggedUser(), _isUserLoggedIn());
+            $rootScope.$broadcast(EVENTS.update);
          }
          function _sanitizeParsedData(parsedData) {
             if (!angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
-               $exceptionHandler("AuthService.setDataParser", "Invalid callback passed. The Callback must return an object like {user: Object, token: String}");
+               $exceptionHandler("AuthService.defineModel", "Invalid callback passed. The Callback must return an object like {user: Object, token: String}");
                parsedData = {
                   "user": null,
                   "token": null

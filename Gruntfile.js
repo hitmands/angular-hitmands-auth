@@ -75,10 +75,6 @@ module.exports = function(grunt) {
                {
                   src: './release/angular-hitmands-auth.js',
                   dest: './release/angular-hitmands-auth.js'
-               },
-               {
-                  src: './release/angular-hitmands-auth-redirect-helper.js',
-                  dest: './release/angular-hitmands-auth-redirect-helper.js'
                }
             ]
          }
@@ -123,10 +119,6 @@ module.exports = function(grunt) {
                      './src/auth-directives.js'
                   ],
                   dest: './release/angular-hitmands-auth.js'
-               },
-               {
-                  src: './src/auth-redirect-helper.js',
-                  dest: './release/angular-hitmands-auth-redirect-helper.js'
                }
             ]
          },
@@ -150,10 +142,6 @@ module.exports = function(grunt) {
                {
                   src: './release/angular-hitmands-auth.js',
                   dest: './release/angular-hitmands-auth.min.js'
-               },
-               {
-                  src: './release/angular-hitmands-auth-redirect-helper.js',
-                  dest: './release/angular-hitmands-auth-redirect-helper.min.js'
                }
             ]
          }
@@ -172,10 +160,6 @@ module.exports = function(grunt) {
                {
                   src: './release/angular-hitmands-auth.min.js',
                   dest: './release/angular-hitmands-auth.min.js'
-               },
-               {
-                  src: './release/angular-hitmands-auth-redirect-helper.js',
-                  dest: './release/angular-hitmands-auth-redirect-helper.min.js'
                }
             ]
          },
@@ -183,6 +167,12 @@ module.exports = function(grunt) {
             src: './coverage/PhantomJS 1.9.8 (Mac OS X)/lcov.info',
             dest : './lcov.info',
             nonull: true
+         }
+      },
+
+      shell: {
+         karmaSingleRun: {
+            command: 'karma start config/karma.js --single-run'
          }
       },
 
@@ -245,9 +235,13 @@ module.exports = function(grunt) {
          'uglify:development',
          'ngAnnotate',
          'uglify:production',
-         'concat:bannerize',
-         'concat:mvLcov'
+         'concat:bannerize'
       ]
    );
 
+   grunt.registerTask('prepareCommit', [
+      'release',
+      'shell:karmaSingleRun',
+      'concat:mvLcov'
+   ]);
 };

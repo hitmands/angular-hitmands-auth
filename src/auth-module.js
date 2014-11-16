@@ -31,6 +31,7 @@ function moduleRun($rootScope, AuthService, $state, $location) {
 
       if( !AuthService.authorize(toState, AuthService.getCurrentUser()) ) {
          var _isUserLoggedIn = AuthService.isUserLoggedIn();
+         event.preventDefault();
 
          $rootScope.$broadcast('$stateChangeError', toState, toParams, fromState, fromParams, {
             statusCode: _isUserLoggedIn ? 403 : 401,
@@ -40,17 +41,15 @@ function moduleRun($rootScope, AuthService, $state, $location) {
          });
 
          if( !fromState.name ) {
-            return $location.path('/');
+            $location.path('/');
          }
 
-         alert('ciao');
-         event.preventDefault();
       }
    });
 
    $rootScope.$on(EVENTS.update, function(event) {
-      if( !AuthService.isUserLoggedIn() && !AuthService.authorize($state.current, AuthService.getCurrentUser()) ) {
-         return $location.path('/');
+      if( !AuthService.authorize($state.current, AuthService.getCurrentUser()) ) {
+         $location.path('/');
       }
    });
 }

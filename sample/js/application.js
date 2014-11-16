@@ -9,7 +9,7 @@
             .useRoutes({
             otherwise: 'login'
          })
-            .setDataParser(function( data, headers, statusCode ) {
+            .defineModel(function( data, headers, statusCode ) {
                return {
                   user: data,
                   token: headers['x-auth-token']
