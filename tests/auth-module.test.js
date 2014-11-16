@@ -1,4 +1,4 @@
-ddescribe('Angular Module Hitmands-Auth', function() {
+describe('Angular Module Hitmands-Auth', function() {
    'use strict';
    var $httpBackend, $rootScope, httpLoginHandler, httpLogoutHandler, $controller, AuthServiceProvider, spyAuthService, getController;
 
@@ -72,7 +72,7 @@ ddescribe('Angular Module Hitmands-Auth', function() {
    ));
 
 
-   it('Testing Service on $stateChangeStart event', angular.mock.inject(
+   it('Testing Module on $stateChangeStart event (No-users-logged-in)', angular.mock.inject(
       function(AuthService, $state, $location) {
 
          expect(AuthService.isUserLoggedIn()).toBeFalsy();
@@ -85,7 +85,7 @@ ddescribe('Angular Module Hitmands-Auth', function() {
       }
    ));
 
-   it('AuthService.authorize Should broadcast StateChangeError when no users are logged-in', angular.mock.inject(
+   it('Testing Module on $stateChangeStart event (Users-logged-in)', angular.mock.inject(
       function(AuthService,  $state) {
 
          Mocks.user.authLevel = 1000; // giving permission
@@ -99,7 +99,14 @@ ddescribe('Angular Module Hitmands-Auth', function() {
       }
    ));
 
+   it('Testing Module on currentUser Update event', angular.mock.inject(
+      function(AuthService,  $state, $location) {
 
+         AuthService.setCurrentUser(Mocks.user, Mocks.user.token);
+         AuthService.unsetCurrentUser();
+         expect(AuthService.isUserLoggedIn()).toBeFalsy();
+      }
+   ));
 
    afterEach(function() {
       $httpBackend.verifyNoOutstandingExpectation();
