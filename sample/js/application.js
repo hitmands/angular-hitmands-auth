@@ -4,14 +4,37 @@
    app
       .config(function(AuthServiceProvider) {
 
+         var User = (function() {
+            function User(raw) {
+               this.username = raw.username;
+               this.password = raw.password;
+               this.email = raw.email;
+               this.displayName = raw.displayName;
+               this.slug = raw.slug;
+               this.company = raw.company;
+               this.phone = raw.phone;
+               this.registeredDate = raw.registeredDate;
+               this.authLevel = raw.authLevel;
+               this.age = raw.age;
+               this.isActive = raw.isActive;
+               this.name = raw.name;
+               this.surname = raw.surname;
+               this.token = raw.token;
+               this.id = raw.id;
+            }
+
+            return User;
+         }).call(this);
+
          // Configuring AuthService
          AuthServiceProvider
             .useRoutes({
-            otherwise: 'login'
-         })
+               otherwise: 'login'
+            })
+            .tokenizeHttp()
             .defineModel(function( data, headers, statusCode ) {
                return {
-                  user: data,
+                  user: new User(data),
                   token: headers['x-auth-token']
                };
             })

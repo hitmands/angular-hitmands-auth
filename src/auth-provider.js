@@ -16,7 +16,6 @@ function AuthProviderFactory( $httpProvider ) {
    var currentUser = null;
    var authToken = null;
 
-
    /**
     *
     * @returns {Boolean}
@@ -36,8 +35,6 @@ function AuthProviderFactory( $httpProvider ) {
 
       return authToken;
    }
-
-
 
    /**
     * Extends Used Routes

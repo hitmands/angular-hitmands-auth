@@ -1,7 +1,6 @@
 {
   "name": "angular-hitmands-auth",
   "version": "0.0.1",
-  "main": "./release/angular-ui-router.js",
   "homepage": "https://github.com/hitmands/angular-hitmands-auth",
   "authors": [
     "Giuseppe Mandato <gius.mand.developer@gmail.com>"
@@ -29,14 +28,14 @@
   ],
   "dependencies": {
     "angular": "~1.3.0",
-    "angular-ui-router": "^0.2.11",
-    "angular-translate": "~2.4.2",
-    "bootstrap": "~3.3.0",
-    "angular-sanitize": "~1.3.1"
+    "angular-ui-router": "^0.2.11"
   },
   "devDependencies": {
-    "angular-animate": "~1.3.1",
-    "angular-mocks": "~1.3.0",
+     "angular-animate": "~1.3.1",
+     "angular-translate": "~2.4.2",
+     "bootstrap": "~3.3.0",
+     "angular-sanitize": "~1.3.1",
+     "angular-mocks": "~1.3.0",
     "angular-hitmands-auth": "*"
   }
 }
