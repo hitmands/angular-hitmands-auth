@@ -298,12 +298,10 @@ function AuthProviderFactory( $httpProvider ) {
           */
          authorize: function( state, user ) {
             var propertyToCheck = AuthCurrentUser.getAuthProperty();
-
             if( !angular.isObject(state) || Object.getPrototypeOf($state) !== Object.getPrototypeOf(state) ) {
                $exceptionHandler('AuthService.authorize', 'first params must be ui-router $state');
                return false;
             }
-
             var stateAuthLevel = angular.isObject(state.data) && state.data.hasOwnProperty(propertyToCheck) ? state.data[propertyToCheck] : state[propertyToCheck];
             if( !angular.isNumber(stateAuthLevel) || stateAuthLevel < 1 ) {
                return true;

@@ -31,6 +31,13 @@ describe('Angular Module Hitmands-Auth', function() {
             name: 'public',
             url: 'public',
             authLevel: 0
+         },
+         dashboard: {
+            name: 'dashboard',
+            url: 'admin',
+            data: {
+               authLevel: 100000
+            }
          }
       }
    };
@@ -42,7 +49,8 @@ describe('Angular Module Hitmands-Auth', function() {
 
          $stateProvider
             .state(Mocks.states.public)
-            .state(Mocks.states.admin);
+            .state(Mocks.states.admin)
+            .state(Mocks.states.dashboard);
       });
    });
 
@@ -83,22 +91,32 @@ describe('Angular Module Hitmands-Auth', function() {
 
          expect(AuthService.authorize).toHaveBeenCalled();
          expect($state.current.name).not.toEqual(Mocks.states.admin.name);
+
+         AuthService.setCurrentUser(Mocks.user, 10, Mocks.user.token);
+         $state.transitionTo(Mocks.states.admin.name);
+         $rootScope.$digest();
+
       }
    ));
 
 
 
    it('Testing Module on $stateChangeStart event (Users-IS-logged-in)', angular.mock.inject(
-      function(AuthService, $state, $location) {
+      function(AuthService, $state, $location, $timeout) {
 
-         AuthService.setCurrentUser(Mocks.user, 10, Mocks.user.token);
+         AuthService.setCurrentUser(Mocks.user, 10000000, Mocks.user.token);
          expect(AuthService.isUserLoggedIn()).toBeTruthy();
 
-         $state.transitionTo(Mocks.states.admin.name);
+         $state.transitionTo(Mocks.states.dashboard.name);
          $rootScope.$digest();
 
          expect(AuthService.authorize).toHaveBeenCalled();
-         expect($state.current.name).not.toEqual(Mocks.states.admin.name);
+         expect($state.current.name).toEqual(Mocks.states.dashboard.name);
+
+         AuthService.authorize($state.current);
+
+         AuthService.unsetCurrentUser();
+         $timeout.flush();
       }
    ));
 
@@ -118,6 +136,20 @@ describe('Angular Module Hitmands-Auth', function() {
 
    it('Testing Module on $stateChangeStart event (User-IS-logged-in)', angular.mock.inject(
       function(AuthService,  $state) {
+
+         Mocks.user.authLevel = 1000; // giving permission
+         AuthService.setCurrentUser(Mocks.user, Mocks.user.authLevel, Mocks.user.token);
+         expect(AuthService.isUserLoggedIn()).toBeTruthy();
+
+         $state.transitionTo(Mocks.states.admin.name);
+         $rootScope.$digest();
+
+         expect($state.current.name).toEqual(Mocks.states.admin.name);
+      }
+   ));
+
+   it('Testing Module on $stateChangeStart event (User-IS-logged-in)', angular.mock.inject(
+      function(AuthService,  $state, $timeout) {
 
          Mocks.user.authLevel = 1000; // giving permission
          AuthService.setCurrentUser(Mocks.user, Mocks.user.authLevel, Mocks.user.token);
@@ -129,6 +161,7 @@ describe('Angular Module Hitmands-Auth', function() {
          expect($state.current.name).toEqual(Mocks.states.admin.name);
 
          AuthService.unsetCurrentUser();
+         $timeout.flush();
       }
    ));
 
