@@ -18,6 +18,7 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
          id: 1,
          slug: 'giuseppe-mandato',
          name: 'Giuseppe',
+         authLevel: 1000,
          surname: 'Mandato',
          token: '697b84c9c82f9abc6a80359c9125d293'
       },
@@ -52,7 +53,7 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
          expect(AuthServiceProvider.setLoggedUser).toEqual( jasmine.any(Function) );
          expect(AuthServiceProvider.getLoggedUser).toEqual( jasmine.any(Function) );
          expect(AuthServiceProvider.tokenizeHttp).toEqual( jasmine.any(Function) );
-         expect(AuthServiceProvider.defineModel).toEqual( jasmine.any(Function) );
+         expect(AuthServiceProvider.parseHttpAuthData).toEqual( jasmine.any(Function) );
          expect(AuthServiceProvider.useRoutes).toEqual( jasmine.any(Function) );
 
          expect(AuthService).toBeDefined();
@@ -71,7 +72,7 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
    it('Set Current User', angular.mock.inject(
       function(AuthService) {
          expect(AuthService.getCurrentUser()).toBeNull();
-         AuthService.setCurrentUser(Mocks.user, Mocks.user.token);
+         AuthService.setCurrentUser(Mocks.user, Mocks.user.authLevel, Mocks.user.token);
          expect(AuthService.getCurrentUser()).toEqual(Mocks.user);
       }
    ));
@@ -83,7 +84,7 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
          expect(AuthService.getCurrentUser()).not.toEqual(Mocks.user);
          expect(AuthService.getCurrentUser()).toBeNull();
 
-         AuthService.setCurrentUser([Mocks.user], '');
+         AuthService.setCurrentUser([Mocks.user], Mocks.user.authLevel, '');
          expect(AuthService.getCurrentUser()).not.toEqual(Mocks.user);
          expect(AuthService.getCurrentUser()).toBeNull();
       }
@@ -92,7 +93,7 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
    it('Get AuthenticationToken', angular.mock.inject(
       function(AuthService) {
          expect(AuthService.getCurrentUser()).toBeNull();
-         AuthService.setCurrentUser(Mocks.user, Mocks.user.token);
+         AuthService.setCurrentUser(Mocks.user, Mocks.user.authLevel, Mocks.user.token);
 
          expect(AuthService.getAuthenticationToken()).toEqual(Mocks.user.token);
 
@@ -107,7 +108,7 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
          expect(AuthService.authorize()).toBeFalsy();
          expect($exceptionHandler.errors).toContain([
             'AuthService.authorize',
-            'first params must be ui.router state'
+            'first params must be ui-router $state'
          ]);
 
       }
@@ -124,8 +125,9 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
    it('AuthService.authorize cases when no users are logged-in', angular.mock.inject(
       function(AuthService) {
          var user = angular.copy(Mocks.user);
+         user.authLevel = 0;
 
-         AuthServiceProvider.setLoggedUser(Mocks.user, Mocks.user.token);
+         AuthServiceProvider.setLoggedUser(Mocks.user, Mocks.user.authLevel, Mocks.user.token);
 
          expect(AuthService.authorize(Mocks.states.public)).toBeTruthy();
          expect(AuthService.authorize(Mocks.states.admin)).toBeFalsy();

@@ -25,8 +25,47 @@ var EVENTS = {
    update: 'hitmands.auth:update'
 };
 
+var AuthCurrentUser = (function() {
+   var authProperty = 'authLevel';
+   function AuthCurrentUser(userData, authLevel) {
+
+      /* jshint ignore:start */
+      for(var k in userData) {
+         if(userData.hasOwnProperty(k) && k !== authProperty) {
+            Object.defineProperty(this, k, {
+               value: userData[k],
+               configurable: true,
+               enumerable: true,
+               writable: true
+            })
+         }
+      }
+      /* jshint ignore:end */
+
+      authLevel = authLevel || userData[authProperty] || 0;
+      Object.defineProperty(this, authProperty, {
+         value: authLevel,
+         configurable: false,
+         enumerable: true,
+         writable: false
+      })
+   }
+
+   AuthCurrentUser.getAuthProperty = function() {
+      return authProperty;
+   };
+
+   return AuthCurrentUser;
+}).call(this);
+
 /* @ngInject */
-function moduleRun($rootScope, AuthService, $state, $location) {
+function AuthModuleRun($rootScope, AuthService, $state, $location, $timeout) {
+   function redirect() {
+      $timeout(function() {
+         $location.path('/');
+      }, 0);
+   }
+
    $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
 
       if( !AuthService.authorize(toState, AuthService.getCurrentUser()) ) {
@@ -41,15 +80,14 @@ function moduleRun($rootScope, AuthService, $state, $location) {
          });
 
          if( !fromState.name ) {
-            $location.path('/');
+            redirect();
          }
-
       }
    });
 
    $rootScope.$on(EVENTS.update, function(event) {
       if( !AuthService.authorize($state.current, AuthService.getCurrentUser()) ) {
-         $location.path('/');
+         redirect();
       }
    });
 }
@@ -60,4 +98,4 @@ angular
    .directive('authLogin', AuthLoginDirectiveFactory)
    .directive('authLogout', AuthLogoutDirectiveFactory)
    .directive('authClasses', AuthClassesDirectiveFactory)
-   .run(moduleRun);
+   .run(AuthModuleRun);

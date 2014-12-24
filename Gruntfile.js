@@ -86,7 +86,8 @@ module.exports = function(grunt) {
                mangle: false,
                sourceMap: true,
                compress: {
-                  sequences: false
+                  sequences: false,
+                  unused: false
                },
                beautify: {
                   indent_level: 3,
@@ -124,10 +125,13 @@ module.exports = function(grunt) {
          },
          production: {
             options: {
-               mangle: true,
+               mangle: {
+                  except: ['AuthCurrentUser']
+               },
                compress: {
                   drop_console: true,
-                  join_vars: true
+                  join_vars: true,
+                  unused: true
                },
                beautify: {
                   ascii_only: true,

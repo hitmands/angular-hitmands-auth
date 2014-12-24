@@ -45,7 +45,7 @@
    "shadow"        : false,
    "supernew"      : false,
    "undef"         : true,
-   "unused"        : true,
+   "unused"        : false,
 
 
    "newcap"        : true,

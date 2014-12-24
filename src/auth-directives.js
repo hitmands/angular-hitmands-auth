@@ -1,11 +1,11 @@
 /* @ngInject */
 function AuthLoginDirectiveFactory(AuthService) {
-   var _form = null;
 
    return {
       restrict: 'A',
       link: function(iScope, iElement, iAttributes) {
          var credentials = iScope[ iAttributes['authLogin'] ];
+         var _form = null;
 
          try {
             _form = iScope[iElement.attr('name')];
@@ -22,7 +22,6 @@ function AuthLoginDirectiveFactory(AuthService) {
                event.preventDefault();
                return;
             }
-
             AuthService.login(credentials);
          });
       }
@@ -37,7 +36,6 @@ function AuthLogoutDirectiveFactory(AuthService) {
       element.bind('click', function() {
          AuthService.logout();
       });
-
    };
 }
 
@@ -56,8 +54,8 @@ function AuthClassesDirectiveFactory(AuthService) {
          function _toggleClass() {
 
             if( AuthService.isUserLoggedIn() ) {
-               iAttributes.$addClass(classes.loggedIn);
                iAttributes.$removeClass(classes.notLoggedIn);
+               iAttributes.$addClass(classes.loggedIn);
             } else {
                iAttributes.$removeClass(classes.loggedIn);
                iAttributes.$addClass(classes.notLoggedIn);

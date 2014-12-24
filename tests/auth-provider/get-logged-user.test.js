@@ -18,6 +18,7 @@ describe('Angular Module Hitmands-Auth:AuthService.getLoggedUser', function() {
          slug: 'giuseppe-mandato',
          name: 'Giuseppe',
          surname: 'Mandato',
+         authLevel: 1000,
          token: '697b84c9c82f9abc6a80359c9125d293'
       }
    };

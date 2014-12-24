@@ -15,6 +15,7 @@ describe('Angular Module Hitmands-Auth:AuthService.tokenizeHttp', function() {
       user: {
          username: 'Hitmands',
          id: 1,
+         authLevel: 1000,
          slug: 'giuseppe-mandato',
          name: 'Giuseppe',
          surname: 'Mandato',

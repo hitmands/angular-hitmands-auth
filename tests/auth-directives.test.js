@@ -13,6 +13,7 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
          id: 1,
          slug: 'giuseppe-mandato',
          name: 'Giuseppe',
+         authLevel: 1000,
          surname: 'Mandato',
          token: '697b84c9c82f9abc6a80359c9125d293'
       }
@@ -51,6 +52,22 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
       }
    ));
 
+   xit('Should not call login', angular.mock.inject(
+      function(AuthService) {
+         spyOn(AuthService, 'login');
+
+         $scope.fields = null;
+         angular.element(document.body).append($compile(loginForm)($scope));
+         $scope.$digest();
+
+         var loginBtn = document.getElementById('loginBtn');
+         var submitEvt = document.createEvent('MouseEvents');
+         submitEvt.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+         loginBtn.dispatchEvent(submitEvt);
+
+         expect(AuthService.login).not.toHaveBeenCalled();
+      }
+   ));
 
    it('Should toggle element classes when user is or isn\'t logged-in', angular.mock.inject(
       function(AuthService) {
@@ -61,7 +78,7 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
 
          expect(authClassesDomElement.className).toContain('user-not-logged-in');
 
-         AuthService.setCurrentUser(Mocks.user, Mocks.user.token);
+         AuthService.setCurrentUser(Mocks.user, Mocks.user.authLevel, Mocks.user.token);
          $scope.$digest();
 
          expect(authClassesDomElement.className).toContain('user-is-logged-in');
@@ -102,7 +119,6 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
          expect(AuthService.login).not.toHaveBeenCalled();
       }
    ));
-
 
    it('Should Logout directive Call AuthService.logout Method', angular.mock.inject(
       function(AuthService) {

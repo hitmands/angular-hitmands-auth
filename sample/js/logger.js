@@ -3,7 +3,7 @@ angular
    .run(function($rootScope, AuthService) {
 
       /***/
-      $rootScope.$on('hitmands.auth:update', function(event, newUserData, isUserloggedIn) {
+      $rootScope.$on('hitmands.auth:update', function(event) {
          console.log( '%chitmands.auth.update (CurrentUser) ', 'color: #2E6EA5; font-weight:bolder;', AuthService.getCurrentUser() );
       });
       /***/

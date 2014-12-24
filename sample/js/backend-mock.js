@@ -26,6 +26,9 @@
             .whenPOST('/users/login')
             .respond(function( method, url, credentials, headers ) {
                credentials = angular.fromJson(credentials);
+               if(!credentials) {
+                  return [401, 'Unauthorized'];
+               }
                var user = $hitmandsBackend.authorize(credentials);
                var validResponse = [200, user, {'x-auth-token': user.token}];
 
@@ -43,13 +46,15 @@
 
          var _authPersistent = null;
          var _authPersistentToken = null;
+         var _authPersistentLevel = null;
 
          try {
             _authPersistent = angular.fromJson($window.sessionStorage.getItem(ssidKey));
             _authPersistentToken = _authPersistent.token;
+            _authPersistentLevel = _authPersistent.authLevel;
          } catch (e) {}
 
-         AuthService.setCurrentUser(_authPersistent, _authPersistentToken);
+         AuthService.setCurrentUser(_authPersistent, _authPersistentLevel, _authPersistentToken);
 
          return {
             users: function() {

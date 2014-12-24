@@ -4,37 +4,16 @@
    app
       .config(function(AuthServiceProvider) {
 
-         var User = (function() {
-            function User(raw) {
-               this.username = raw.username;
-               this.password = raw.password;
-               this.email = raw.email;
-               this.displayName = raw.displayName;
-               this.slug = raw.slug;
-               this.company = raw.company;
-               this.phone = raw.phone;
-               this.registeredDate = raw.registeredDate;
-               this.authLevel = raw.authLevel;
-               this.age = raw.age;
-               this.isActive = raw.isActive;
-               this.name = raw.name;
-               this.surname = raw.surname;
-               this.token = raw.token;
-               this.id = raw.id;
-            }
-
-            return User;
-         }).call(this);
-
          // Configuring AuthService
          AuthServiceProvider
             .useRoutes({
                otherwise: 'login'
             })
             .tokenizeHttp()
-            .defineModel(function( data, headers, statusCode ) {
+            .parseHttpAuthData(function( data, headers, statusCode ) {
                return {
-                  user: new User(data),
+                  user: data,
+                  authLevel: data.authLevel,
                   token: headers['x-auth-token']
                };
             })
@@ -103,6 +82,9 @@
                      return $hitmandsBackend.users();
                   }]
                },
+               data: {
+                  authLevel: 1000
+               },
                views: {
                   header: {
                      templateUrl: 'views/header.html',
@@ -114,6 +96,20 @@
                   }
                },
                authLevel: 1000
+            })
+            .state('admin.other', {
+               url: 'other-admin-page/',
+
+               views: {
+                  header: {
+                     templateUrl: 'views/header.html',
+                     controller: function($scope) {}
+                  },
+                  main: {
+                     templateUrl: 'views/admin.html',
+                     controller: 'AdminCtrl'
+                  }
+               }
             });
 
          $urlRouterProvider.otherwise('/404');
@@ -127,13 +123,14 @@
          ;
       })
 
-      .run(function($rootScope, $state, $stateParams, AuthService) {
+      .run(function($rootScope, $state, $stateParams, AuthService, $injector) {
 
          window.AuthService = AuthService;
+         window.ngInj = $injector.get;
+         window.$state = $state;
 
          $rootScope.$state = $state;
          $rootScope.$stateParams = $stateParams;
-
 
          $rootScope.currentUser = AuthService.getCurrentUser();
          $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
@@ -147,7 +144,6 @@
          return function(scope, el, attrs) {
             var yLimit = attrs['followScroll'];
             angular.element($window).bind('scroll', function() {
-               console.log(yLimit, this.pageYOffset);
                if(this.pageYOffset > yLimit) {
                   el.hasClass('lock') || el.addClass('lock');
                } else {

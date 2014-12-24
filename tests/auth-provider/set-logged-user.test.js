@@ -16,6 +16,7 @@ describe('Angular Module Hitmands-Auth:AuthService.setLoggedUser', function() {
          username: 'Hitmands',
          id: 1,
          slug: 'giuseppe-mandato',
+         authLevel: 1000,
          name: 'Giuseppe',
          surname: 'Mandato',
          token: '697b84c9c82f9abc6a80359c9125d293'

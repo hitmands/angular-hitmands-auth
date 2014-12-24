@@ -8,7 +8,8 @@ function AuthProviderFactory( $httpProvider ) {
 
       return {
          user: data,
-         token: data.token
+         token: data.token,
+         authLevel: data.authLevel
       };
    };
 
@@ -23,7 +24,7 @@ function AuthProviderFactory( $httpProvider ) {
     */
    function _isUserLoggedIn() {
 
-      return angular.isObject( self.getLoggedUser() );
+      return (self.getLoggedUser() instanceof AuthCurrentUser);
    }
 
    /**
@@ -40,9 +41,9 @@ function AuthProviderFactory( $httpProvider ) {
     * Extends Used Routes
     *
     * @preserve
-    * @param {Object} [newRoutes = {login: String, logout: String, fetch: String, authRedirect: String}]
+    * @param {Object} [newRoutes = {login: String, logout: String, fetch: String}]
     */
-   this.useRoutes = function AuthServiceRoutesListGetterSetter( newRoutes ) {
+   this.useRoutes = function AuthServiceRoutesListSetter( newRoutes ) {
       if( angular.isObject(newRoutes) ) {
          routes = angular.extend(routes, newRoutes);
       }
@@ -72,10 +73,10 @@ function AuthProviderFactory( $httpProvider ) {
          tokenKey = 'x-auth-token';
       }
 
-      $httpProvider.interceptors.push(function() {
+      $httpProvider.interceptors.push(function AuthServiceInterceptor() {
 
          return {
-            request: function(config) {
+            request: function AuthServiceRequestTransform(config) {
 
                if(
                   _isUserLoggedIn() &&
@@ -95,46 +96,53 @@ function AuthProviderFactory( $httpProvider ) {
 
    /**
     * @preserve
-    * @param {Object|null} [user=null]
+    * @param {Object|null} [userData=null]
+    * @param {Number|null} authLevel
     * @param {String|null} [authenticationToken=null]
     */
-   this.setLoggedUser = function AuthServiceLoggedUserSetter( user, authenticationToken ) {
-      if( angular.isArray(user) || !angular.isObject( user ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
+   this.setLoggedUser = function AuthServiceLoggedUserSetter( userData, authenticationToken, authLevel ) {
+      if( angular.isArray(userData) || !angular.isObject( userData ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
 
-         user = null;
+         userData = null;
          authenticationToken = null;
       }
 
-      currentUser = angular.copy(user);
+      currentUser = (userData) ? new AuthCurrentUser(userData, authLevel) : null;
       authToken = authenticationToken;
       return this;
    };
 
-
    /**
     * @preserve
-    * @param {Requester~requestCallback} callback - The callback that handles the response.
+    * @param {Requester~requestCallback} callback - The callback that handles the $http response.
     */
-   this.defineModel = function AuthServiceExpectDataAs( callback ) {
+   this.parseHttpAuthData = function AuthServiceExpectDataAs( callback ) {
       if( angular.isFunction(callback) ) {
 
-         _dataParser =  callback;
+         _dataParser = callback;
       }
 
       return this;
    };
 
 
-   this.$get = function($rootScope, $http, $exceptionHandler) {
+   this.$get = function($rootScope, $http, $state, $exceptionHandler, $timeout) {
 
       /**
        * @param {Object|null} newUserData
        * @param {String|null} newAuthToken
+       * @param {Number|null} newAuthLevel
        * @private
        */
-      function _setLoggedUser( newUserData, newAuthToken ) {
-         self.setLoggedUser( newUserData, newAuthToken );
+      function _setLoggedUser( newUserData, newAuthToken, newAuthLevel ) {
+         self.setLoggedUser( newUserData, newAuthToken, newAuthLevel );
          $rootScope.$broadcast(EVENTS.update);
+
+         $timeout(function() {
+            if(!$rootScope.$$phase) {
+               $rootScope.$digest();
+            }
+         }, 0)
       }
 
       /**
@@ -144,7 +152,7 @@ function AuthProviderFactory( $httpProvider ) {
        */
       function _sanitizeParsedData( parsedData ) {
          if( !angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
-            $exceptionHandler('AuthService.defineModel', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String}');
+            $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number}');
 
             parsedData = {
                user: null,
@@ -171,13 +179,13 @@ function AuthProviderFactory( $httpProvider ) {
                function( result ) {
                   var data = _sanitizeParsedData( _dataParser(result.data, result.headers(), result.status) );
 
-                  _setLoggedUser( data.user, data.token );
+                  _setLoggedUser( data.user, data.token, data.authLevel );
                   $rootScope.$broadcast(EVENTS.login.success, result);
 
                   return result;
                },
                function( error ) {
-                  _setLoggedUser( null, null );
+                  _setLoggedUser( null, null, null );
                   $rootScope.$broadcast(EVENTS.login.error, error);
 
                   return error;
@@ -199,13 +207,13 @@ function AuthProviderFactory( $httpProvider ) {
                function( result ) {
                   var data = _sanitizeParsedData( _dataParser(result.data, result.headers(), result.status) );
 
-                  _setLoggedUser( data.user, data.token );
+                  _setLoggedUser( data.user, data.token, data.authLevel );
                   $rootScope.$broadcast(EVENTS.fetch.success, result);
 
                   return result;
                },
                function( error ) {
-                  _setLoggedUser( null, null );
+                  _setLoggedUser( null, null, null );
                   $rootScope.$broadcast(EVENTS.fetch.error, error);
 
                   return error;
@@ -225,13 +233,13 @@ function AuthProviderFactory( $httpProvider ) {
                .post(routes.logout, null, { cache: false })
                .then(
                function( result ) {
-                  _setLoggedUser( null, null );
+                  _setLoggedUser( null, null, null );
                   $rootScope.$broadcast(EVENTS.logout.success, result);
 
                   return result;
                },
                function( error ) {
-                  _setLoggedUser( null, null );
+                  _setLoggedUser( null, null, null );
                   $rootScope.$broadcast(EVENTS.logout.error, error);
 
                   return error;
@@ -242,22 +250,25 @@ function AuthProviderFactory( $httpProvider ) {
          /**
           * @preserve
           * @param {Object} user
+          * @param {Number} authLevel
           * @param {String} authenticationToken
           */
-         setCurrentUser: function(user, authenticationToken) {
+         setCurrentUser: function(user, authLevel, authenticationToken) {
             if( angular.isArray(user) || !angular.isObject( user ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
-               return;
+               return false;
             }
 
-
-            _setLoggedUser( user, authenticationToken );
+            _setLoggedUser( user, authenticationToken, authLevel );
+            return true;
          },
 
          /**
           * @preserve
           */
          unsetCurrentUser: function() {
-            _setLoggedUser( null, null );
+
+            _setLoggedUser( null, null, null );
+            return true;
          },
 
          /**
@@ -286,23 +297,27 @@ function AuthProviderFactory( $httpProvider ) {
           * @returns {Boolean} Is the CurrentUser Authorized for State?
           */
          authorize: function( state, user ) {
-            if( angular.isArray(state) || !angular.isObject(state) ) {
-               $exceptionHandler('AuthService.authorize', 'first params must be ui.router state');
+            var propertyToCheck = AuthCurrentUser.getAuthProperty();
+
+            if( !angular.isObject(state) || Object.getPrototypeOf($state) !== Object.getPrototypeOf(state) ) {
+               $exceptionHandler('AuthService.authorize', 'first params must be ui-router $state');
                return false;
             }
-            if( !angular.isNumber(state.authLevel) || state.authLevel < 1) {
+
+            var stateAuthLevel = angular.isObject(state.data) && state.data.hasOwnProperty(propertyToCheck) ? state.data[propertyToCheck] : state[propertyToCheck];
+            if( !angular.isNumber(stateAuthLevel) || stateAuthLevel < 1 ) {
                return true;
             }
 
             if( angular.isObject(user) ) {
-               return ( (user.authLevel || 0) >= state.authLevel);
+               return ( (user[propertyToCheck] || 0) >= stateAuthLevel );
             }
 
             if( !_isUserLoggedIn() ) {
                return false;
             }
 
-            return ( (self.getLoggedUser().authLevel || 0) >= state.authLevel);
+            return ( (self.getLoggedUser()[propertyToCheck] || 0) >= stateAuthLevel );
          },
 
          /**
