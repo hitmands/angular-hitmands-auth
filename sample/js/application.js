@@ -112,6 +112,27 @@
                }
             });
 
+         var protectedAuth = {
+            name: 'admin.protected',
+            url: 'other-protected/',
+            views: {
+               header: {
+                  templateUrl: 'views/header.html',
+                  controller: function($scope) {}
+               },
+               main: {
+                  template: '<h1>Other Admin Page</h1>',
+                  controller: 'AdminCtrl'
+               }
+            },
+            data: {}
+         };
+         Object.defineProperty(protectedAuth.data, 'authLevel', {
+            value: 100000000,
+            enumerable: true
+         });
+
+         $stateProvider.state(protectedAuth);
          $urlRouterProvider.otherwise('/404');
       })
       .config(function($translateProvider) {

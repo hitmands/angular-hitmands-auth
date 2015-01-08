@@ -9,6 +9,7 @@ ___
 Table of Content:
 * [Getting Started](#getting-started)
 * [Configuration](#module-config)
+* [Usage](#module-run)
 
 
 ##<a name="getting-started"></a> Get Started
@@ -47,7 +48,7 @@ $ bower install --save angular-hitmands-auth
 ```javascript
 // app/configs/auth.config.js
 
-angular.module('myApp').config(function(AuthServiceProvider) {
+angular.module('myApp').config(function(AuthServiceProvider, $stateProvider) {
 
 
     // Sets API ENDPOINTS
@@ -57,7 +58,7 @@ angular.module('myApp').config(function(AuthServiceProvider) {
             fetch: '/api/v1/users/me'
         });
 
-    // Appends AUTH TOKEN to the headers for all http requests
+    // Append AUTH TOKEN to the headers for all http requests
     AuthServiceProvider.tokenizeHttp('MY-CUSTOM-HEADER-KEY');
 
 
@@ -78,5 +79,44 @@ angular.module('myApp').config(function(AuthServiceProvider) {
     if(angular.isDefined(window.persistentUserData) && angular.isDefined(window.persistentAuthToken) {
         AuthServiceProvider.setLoggedUser(window.persistentUserData, window.persistentAuthToken);
     }
+
+    //Define protected states
+    var dashboard = {
+        name: 'dashboard',
+        url: '/admin/dashboard',
+        views: { ... },
+        data: { someValue: ..., otherValue: ... }
+    };
+
+    // the authLevel property can be attached on dashboard or dashboard.data object,
+    // if attached on dashboard.data it will be inherited from other child states.
+    Object.defineProperty(dashboard.data, 'authLevel', {
+        value: 1000,
+        writable: false,
+        configurable: false,
+        enumerable: true
+    });
+    $stateProvider
+        .state(dashboard)
 });
 ```
+
+##<a name="module-run"></a> Usage
+```javascript
+// app/auth.run.js
+
+angular
+    .module('myApp').run(function($rootScope, AuthService) {
+
+    $rootScope.currentUser = AuthService.getCurrentUser();
+    $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
+
+    $rootScope.$on('hitmands.auth:update', function() {
+        $rootScope.currentUser = AuthService.getCurrentUser();
+        $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
+    });
+
+});
+```
+
+
