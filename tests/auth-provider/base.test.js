@@ -108,7 +108,7 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
          expect(AuthService.authorize()).toBeFalsy();
          expect($exceptionHandler.errors).toContain([
             'AuthService.authorize',
-            'first params must be ui-router $state'
+            'first param must be ui-router $state'
          ]);
 
       }

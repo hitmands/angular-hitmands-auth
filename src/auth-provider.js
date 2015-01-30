@@ -16,6 +16,7 @@ function AuthProviderFactory( $httpProvider ) {
    var self = this;
    var currentUser = null;
    var authToken = null;
+   var HttpHeaderAuthorization = false;
 
    /**
     *
@@ -35,6 +36,41 @@ function AuthProviderFactory( $httpProvider ) {
    function _getAuthToken() {
 
       return authToken;
+   }
+
+   /**
+    *
+    * @param {Number} stateAuthLevel
+    * @param {Number} userAuthLevel
+    * @returns {Boolean}
+    * @private
+    */
+   function _authorizeLevelBased(stateAuthLevel, userAuthLevel) {
+      if( !angular.isNumber(userAuthLevel) ) {
+         userAuthLevel = 0;
+      }
+
+      return ( userAuthLevel >= stateAuthLevel );
+   }
+   /**
+    *
+    * @param {Array} stateAuthRoles
+    * @param {Array} userAuthRoles
+    * @returns {Boolean}
+    * @private
+    */
+   function _authorizeRoleBased(stateAuthRoles, userAuthRoles) {
+      userAuthRoles = angular.isArray(userAuthRoles) ? userAuthRoles : [userAuthRoles];
+
+      for(var i = 0, len = stateAuthRoles.length; i < len; i++) {
+         for(var j = 0, jLen = userAuthRoles.length; j < jLen; j++) {
+            if( angular.equals(stateAuthRoles[i], userAuthRoles[j]) ) {
+               return true;
+            }
+         }
+      }
+
+      return false;
    }
 
    /**
@@ -95,6 +131,16 @@ function AuthProviderFactory( $httpProvider ) {
    };
 
    /**
+    * Encrypts login requests like headers['Authorization'] = 'Basic' + ' ' + btoa(credentials.username + ':' + credentials.password)
+    * @preserve
+    */
+   this.useHttpHeaderAuth = function AuthServiceUseHttpHeaderAuthorization() {
+      HttpHeaderAuthorization = true;
+
+      return this;
+   };
+
+   /**
     * @preserve
     * @param {Object|null} [userData=null]
     * @param {Number|null} authLevel
@@ -109,6 +155,7 @@ function AuthProviderFactory( $httpProvider ) {
 
       currentUser = (userData) ? new AuthCurrentUser(userData, authLevel) : null;
       authToken = authenticationToken;
+
       return this;
    };
 
@@ -126,7 +173,7 @@ function AuthProviderFactory( $httpProvider ) {
    };
 
 
-   this.$get = function($rootScope, $http, $state, $exceptionHandler, $timeout) {
+   this.$get = function($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
 
       /**
        * @param {Object|null} newUserData
@@ -142,7 +189,7 @@ function AuthProviderFactory( $httpProvider ) {
             if(!$rootScope.$$phase) {
                $rootScope.$digest();
             }
-         }, 0)
+         }, 0);
       }
 
       /**
@@ -152,7 +199,7 @@ function AuthProviderFactory( $httpProvider ) {
        */
       function _sanitizeParsedData( parsedData ) {
          if( !angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
-            $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number}');
+            $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number|Array}');
 
             parsedData = {
                user: null,
@@ -172,9 +219,26 @@ function AuthProviderFactory( $httpProvider ) {
           * @returns {ng.IPromise}
           */
          login: function( credentials ) {
+            var configs = {
+               cache: false
+            };
+
+            if(HttpHeaderAuthorization) {
+               configs.headers = {
+                  Authorization : 'Basic' + ' ' + btoa((credentials.username || '') + ':' + (credentials.password || ''))
+               };
+
+               try {
+                  delete credentials['username'];
+                  delete credentials['password'];
+               } catch(e) {
+                  credentials.username = '';
+                  credentials.password = '';
+               }
+            }
 
             return $http
-               .post(routes.login, credentials, { cache: false })
+               .post(routes.login, credentials, configs)
                .then(
                function( result ) {
                   var data = _sanitizeParsedData( _dataParser(result.data, result.headers(), result.status) );
@@ -188,7 +252,7 @@ function AuthProviderFactory( $httpProvider ) {
                   _setLoggedUser( null, null, null );
                   $rootScope.$broadcast(EVENTS.login.error, error);
 
-                  return error;
+                  return $q.reject(error);
                }
             );
          },
@@ -216,7 +280,7 @@ function AuthProviderFactory( $httpProvider ) {
                   _setLoggedUser( null, null, null );
                   $rootScope.$broadcast(EVENTS.fetch.error, error);
 
-                  return error;
+                  return $q.reject(error);
                }
             );
          },
@@ -242,7 +306,7 @@ function AuthProviderFactory( $httpProvider ) {
                   _setLoggedUser( null, null, null );
                   $rootScope.$broadcast(EVENTS.logout.error, error);
 
-                  return error;
+                  return $q.reject(error);
                }
             );
          },
@@ -294,28 +358,37 @@ function AuthProviderFactory( $httpProvider ) {
           * @preserve
           * @param {Object} state
           * @param {Object} [user = currentUser]
-          * @returns {Boolean} Is the CurrentUser Authorized for State?
+          * @returns {Boolean}
           */
          authorize: function( state, user ) {
+            var userAuthLevel;
             var propertyToCheck = AuthCurrentUser.getAuthProperty();
+            user = user || self.getLoggedUser();
+
             if( !angular.isObject(state) || Object.getPrototypeOf($state) !== Object.getPrototypeOf(state) ) {
-               $exceptionHandler('AuthService.authorize', 'first params must be ui-router $state');
-               return false;
-            }
-            var stateAuthLevel = angular.isObject(state.data) && state.data.hasOwnProperty(propertyToCheck) ? state.data[propertyToCheck] : state[propertyToCheck];
-            if( !angular.isNumber(stateAuthLevel) || stateAuthLevel < 1 ) {
-               return true;
-            }
-
-            if( angular.isObject(user) ) {
-               return ( (user[propertyToCheck] || 0) >= stateAuthLevel );
-            }
-
-            if( !_isUserLoggedIn() ) {
+               $exceptionHandler('AuthService.authorize', 'first param must be ui-router $state');
                return false;
             }
 
-            return ( (self.getLoggedUser()[propertyToCheck] || 0) >= stateAuthLevel );
+            try {
+               userAuthLevel = user[propertyToCheck]
+            } catch(e) {
+               userAuthLevel = 0;
+            }
+
+            var stateAuthLevel = ((angular.isObject(state.data) && state.data.hasOwnProperty(propertyToCheck)) ?
+                  state.data[propertyToCheck] : state[propertyToCheck]) || 0;
+
+            if(angular.isNumber(stateAuthLevel)) {
+               return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
+            }
+
+            if(angular.isArray(stateAuthLevel)) {
+               return _authorizeRoleBased(stateAuthLevel, userAuthLevel);
+            }
+
+            $exceptionHandler('AuthService.authorize', 'Cannot process authorization');
+            return false;
          },
 
          /**

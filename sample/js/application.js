@@ -10,6 +10,7 @@
                otherwise: 'login'
             })
             .tokenizeHttp()
+            .useHttpHeaderAuth()
             .parseHttpAuthData(function( data, headers, statusCode ) {
                return {
                   user: data,
@@ -99,7 +100,9 @@
             })
             .state('admin.other', {
                url: 'other-admin-page/',
-
+               data: {
+                  authLevel: ['admin', 'editor']
+               },
                views: {
                   header: {
                      templateUrl: 'views/header.html',

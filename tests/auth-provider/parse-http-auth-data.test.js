@@ -90,7 +90,7 @@ describe('Angular Module Hitmands-Auth:AuthService.parseHttpAuthData', function(
 
                expect($exceptionHandler.errors).toContain([
                   'AuthServiceProvider.parseHttpAuthData',
-                  'Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number}'
+                  'Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number|Array}'
                ]);
 
                expect(AuthService.getCurrentUser()).not.toEqual(Mocks.user);

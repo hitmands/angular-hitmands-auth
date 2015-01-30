@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-01-08
+ * @Date: 2015-01-29
  * @Version: 0.0.1
 ***/
 
@@ -44,6 +44,21 @@
       function _getAuthToken() {
          return authToken;
       }
+      function _authorizeLevelBased(stateAuthLevel, userAuthLevel) {
+         angular.isNumber(userAuthLevel) || (userAuthLevel = 0);
+         return userAuthLevel >= stateAuthLevel;
+      }
+      function _authorizeRoleBased(stateAuthRoles, userAuthRoles) {
+         userAuthRoles = angular.isArray(userAuthRoles) ? userAuthRoles : [ userAuthRoles ];
+         for (var i = 0, len = stateAuthRoles.length; len > i; i++) {
+            for (var j = 0, jLen = userAuthRoles.length; jLen > j; j++) {
+               if (angular.equals(stateAuthRoles[i], userAuthRoles[j])) {
+                  return !0;
+               }
+            }
+         }
+         return !1;
+      }
       /**
     * @preserve
     * @callback Requester~requestCallback - The callback that handles the response.
@@ -54,7 +69,7 @@
             "token": data.token,
             "authLevel": data.authLevel
          };
-      }, self = this, currentUser = null, authToken = null;
+      }, self = this, currentUser = null, authToken = null, HttpHeaderAuthorization = !1;
       /**
     * Extends Used Routes
     *
@@ -93,6 +108,14 @@
          return this;
       };
       /**
+    * Encrypts login requests like headers['Authorization'] = 'Basic' + ' ' + btoa(credentials.username + ':' + credentials.password)
+    * @preserve
+    */
+      this.useHttpHeaderAuth = function AuthServiceUseHttpHeaderAuthorization() {
+         HttpHeaderAuthorization = !0;
+         return this;
+      };
+      /**
     * @preserve
     * @param {Object|null} [userData=null]
     * @param {Number|null} authLevel
@@ -115,7 +138,7 @@
          angular.isFunction(callback) && (_dataParser = callback);
          return this;
       };
-      this.$get = ['$rootScope', '$http', '$state', '$exceptionHandler', '$timeout', function($rootScope, $http, $state, $exceptionHandler, $timeout) {
+      this.$get = ['$rootScope', '$http', '$state', '$exceptionHandler', '$timeout', '$q', function($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
          function _setLoggedUser(newUserData, newAuthToken, newAuthLevel) {
             self.setLoggedUser(newUserData, newAuthToken, newAuthLevel);
             $rootScope.$broadcast(EVENTS.update);
@@ -125,7 +148,7 @@
          }
          function _sanitizeParsedData(parsedData) {
             if (!angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
-               $exceptionHandler("AuthServiceProvider.parseHttpAuthData", "Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number}");
+               $exceptionHandler("AuthServiceProvider.parseHttpAuthData", "Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number|Array}");
                parsedData = {
                   "user": null,
                   "token": null
@@ -142,9 +165,22 @@
           * @returns {ng.IPromise}
           */
             "login": function(credentials) {
-               return $http.post(routes.login, credentials, {
+               var configs = {
                   "cache": !1
-               }).then(function(result) {
+               };
+               if (HttpHeaderAuthorization) {
+                  configs.headers = {
+                     "Authorization": "Basic " + btoa((credentials.username || "") + ":" + (credentials.password || ""))
+                  };
+                  try {
+                     delete credentials.username;
+                     delete credentials.password;
+                  } catch (e) {
+                     credentials.username = "";
+                     credentials.password = "";
+                  }
+               }
+               return $http.post(routes.login, credentials, configs).then(function(result) {
                   var data = _sanitizeParsedData(_dataParser(result.data, result.headers(), result.status));
                   _setLoggedUser(data.user, data.token, data.authLevel);
                   $rootScope.$broadcast(EVENTS.login.success, result);
@@ -152,7 +188,7 @@
                }, function(error) {
                   _setLoggedUser(null, null, null);
                   $rootScope.$broadcast(EVENTS.login.error, error);
-                  return error;
+                  return $q.reject(error);
                });
             },
             /**
@@ -172,7 +208,7 @@
                }, function(error) {
                   _setLoggedUser(null, null, null);
                   $rootScope.$broadcast(EVENTS.fetch.error, error);
-                  return error;
+                  return $q.reject(error);
                });
             },
             /**
@@ -191,7 +227,7 @@
                }, function(error) {
                   _setLoggedUser(null, null, null);
                   $rootScope.$broadcast(EVENTS.logout.error, error);
-                  return error;
+                  return $q.reject(error);
                });
             },
             /**
@@ -233,16 +269,29 @@
           * @preserve
           * @param {Object} state
           * @param {Object} [user = currentUser]
-          * @returns {Boolean} Is the CurrentUser Authorized for State?
+          * @returns {Boolean}
           */
             "authorize": function(state, user) {
-               var propertyToCheck = AuthCurrentUser.getAuthProperty();
+               var userAuthLevel, propertyToCheck = AuthCurrentUser.getAuthProperty();
+               user = user || self.getLoggedUser();
                if (!angular.isObject(state) || Object.getPrototypeOf($state) !== Object.getPrototypeOf(state)) {
-                  $exceptionHandler("AuthService.authorize", "first params must be ui-router $state");
+                  $exceptionHandler("AuthService.authorize", "first param must be ui-router $state");
                   return !1;
                }
-               var stateAuthLevel = angular.isObject(state.data) && state.data.hasOwnProperty(propertyToCheck) ? state.data[propertyToCheck] : state[propertyToCheck];
-               return !angular.isNumber(stateAuthLevel) || 1 > stateAuthLevel ? !0 : angular.isObject(user) ? (user[propertyToCheck] || 0) >= stateAuthLevel : _isUserLoggedIn() ? (self.getLoggedUser()[propertyToCheck] || 0) >= stateAuthLevel : !1;
+               try {
+                  userAuthLevel = user[propertyToCheck];
+               } catch (e) {
+                  userAuthLevel = 0;
+               }
+               var stateAuthLevel = (angular.isObject(state.data) && state.data.hasOwnProperty(propertyToCheck) ? state.data[propertyToCheck] : state[propertyToCheck]) || 0;
+               if (angular.isNumber(stateAuthLevel)) {
+                  return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
+               }
+               if (angular.isArray(stateAuthLevel)) {
+                  return _authorizeRoleBased(stateAuthLevel, userAuthLevel);
+               }
+               $exceptionHandler("AuthService.authorize", "Cannot process authorization");
+               return !1;
             },
             /**
           * @preserve
@@ -268,6 +317,9 @@
             iElement.bind("submit", function(event) {
                angular.isObject(credentials) ? angular.isObject(_form) && _form.hasOwnProperty("$invalid") && _form.$invalid ? event.preventDefault() : AuthService.login(credentials) : event.preventDefault();
             });
+            iScope.$on("$destroy", function() {
+               iElement.unbind("submit");
+            });
          }
       };
    }
@@ -278,6 +330,9 @@
       return function(scope, element, attrs) {
          element.bind("click", function() {
             AuthService.logout();
+         });
+         scope.$on("$destroy", function() {
+            element.unbind("click");
          });
       };
    }

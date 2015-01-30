@@ -22,15 +22,40 @@
                return [200, null];
             });
 
+         function decryptHttpAuth(authEncrypted) {
+            authEncrypted = authEncrypted.split(' ');
+            var decryptedData = {
+               authMethod: authEncrypted.shift()
+            };
+            authEncrypted = atob(authEncrypted[0]).split(':');
+            decryptedData.username = authEncrypted[0];
+            decryptedData.password = authEncrypted[1];
+
+            return decryptedData;
+         }
+
          $httpBackend
             .whenPOST('/users/login')
             .respond(function( method, url, credentials, headers ) {
+               console.log('$httpBackend.whenPost:login', arguments);
                credentials = angular.fromJson(credentials);
+               if(headers.Authorization) {
+                  var decryptedData = decryptHttpAuth(headers.Authorization);
+                  credentials.username = decryptedData.username;
+                  credentials.password = decryptedData.password;
+               }
+
                if(!credentials) {
                   return [401, 'Unauthorized'];
                }
                var user = $hitmandsBackend.authorize(credentials);
-               var validResponse = [200, user, {'x-auth-token': user.token}];
+
+               var validResponse;
+               try {
+                  validResponse = [200, user, {'x-auth-token': user.token}];
+               } catch(e) {
+                  return [500, null, {}, 'Internal server error'];
+               }
 
                try {
                   delete user.token;
@@ -38,7 +63,7 @@
                   user.token = null;
                }
 
-               return (angular.isObject(user)) ? validResponse : [401, 'Unauthorized'];
+               return (angular.isObject(user)) ? validResponse : [401, null, {}, 'Unauthorized'];
             });
       })
       .factory('$hitmandsBackend', function($window, AuthService) {

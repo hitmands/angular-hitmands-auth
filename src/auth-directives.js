@@ -24,6 +24,10 @@ function AuthLoginDirectiveFactory(AuthService) {
             }
             AuthService.login(credentials);
          });
+
+         iScope.$on('$destroy', function() {
+            iElement.unbind('submit');
+         });
       }
    };
 }
@@ -35,6 +39,10 @@ function AuthLogoutDirectiveFactory(AuthService) {
 
       element.bind('click', function() {
          AuthService.logout();
+      });
+
+      scope.$on('$destroy', function() {
+         element.unbind('click');
       });
    };
 }
