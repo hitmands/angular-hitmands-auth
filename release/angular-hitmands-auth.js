@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-01-29
+ * @Date: 2015-01-31
  * @Version: 0.0.1
 ***/
 
@@ -69,7 +69,7 @@
             "token": data.token,
             "authLevel": data.authLevel
          };
-      }, self = this, currentUser = null, authToken = null, HttpHeaderAuthorization = !1;
+      }, self = this, currentUser = null, authToken = null, isBasicAuthEnabled = !1;
       /**
     * Extends Used Routes
     *
@@ -111,8 +111,8 @@
     * Encrypts login requests like headers['Authorization'] = 'Basic' + ' ' + btoa(credentials.username + ':' + credentials.password)
     * @preserve
     */
-      this.useHttpHeaderAuth = function AuthServiceUseHttpHeaderAuthorization() {
-         HttpHeaderAuthorization = !0;
+      this.useBasicAuthentication = function AuthServiceUseHttpHeaderAuthorization() {
+         isBasicAuthEnabled = !0;
          return this;
       };
       /**
@@ -168,7 +168,7 @@
                var configs = {
                   "cache": !1
                };
-               if (HttpHeaderAuthorization) {
+               if (isBasicAuthEnabled) {
                   configs.headers = {
                      "Authorization": "Basic " + btoa((credentials.username || "") + ":" + (credentials.password || ""))
                   };
@@ -388,20 +388,12 @@
       function AuthCurrentUser(userData, authLevel) {
          /* jshint ignore:start */
          for (var k in userData) {
-            userData.hasOwnProperty(k) && k !== authProperty && Object.defineProperty(this, k, {
-               "value": userData[k],
-               "configurable": !0,
-               "enumerable": !0,
-               "writable": !0
-            });
+            userData.hasOwnProperty(k) && k !== authProperty && (this[k] = userData[k]);
          }
          /* jshint ignore:end */
-         authLevel = authLevel || userData[authProperty] || 0;
          Object.defineProperty(this, authProperty, {
-            "value": authLevel,
-            "configurable": !1,
             "enumerable": !0,
-            "writable": !1
+            "value": authLevel || userData[authProperty] || 0
          });
       }
       var authProperty = "authLevel";

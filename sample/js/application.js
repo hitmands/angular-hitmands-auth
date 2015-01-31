@@ -10,7 +10,7 @@
                otherwise: 'login'
             })
             .tokenizeHttp()
-            .useHttpHeaderAuth()
+            .useBasicAuthentication()
             .parseHttpAuthData(function( data, headers, statusCode ) {
                return {
                   user: data,

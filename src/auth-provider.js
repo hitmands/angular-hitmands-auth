@@ -16,7 +16,7 @@ function AuthProviderFactory( $httpProvider ) {
    var self = this;
    var currentUser = null;
    var authToken = null;
-   var HttpHeaderAuthorization = false;
+   var isBasicAuthEnabled = false;
 
    /**
     *
@@ -134,8 +134,8 @@ function AuthProviderFactory( $httpProvider ) {
     * Encrypts login requests like headers['Authorization'] = 'Basic' + ' ' + btoa(credentials.username + ':' + credentials.password)
     * @preserve
     */
-   this.useHttpHeaderAuth = function AuthServiceUseHttpHeaderAuthorization() {
-      HttpHeaderAuthorization = true;
+   this.useBasicAuthentication = function AuthServiceUseHttpHeaderAuthorization() {
+      isBasicAuthEnabled = true;
 
       return this;
    };
@@ -223,7 +223,7 @@ function AuthProviderFactory( $httpProvider ) {
                cache: false
             };
 
-            if(HttpHeaderAuthorization) {
+            if(isBasicAuthEnabled) {
                configs.headers = {
                   Authorization : 'Basic' + ' ' + btoa((credentials.username || '') + ':' + (credentials.password || ''))
                };

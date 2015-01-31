@@ -13,7 +13,6 @@ Table of Content:
 
 
 ##<a name="getting-started"></a> Get Started
-Install via bower
 ```
 $ bower install --save angular-hitmands-auth
 ```
@@ -48,57 +47,65 @@ $ bower install --save angular-hitmands-auth
 ```javascript
 // app/configs/auth.config.js
 
-angular.module('myApp').config(function(AuthServiceProvider, $stateProvider) {
+angular
+    .module('myApp')
+    .config(function(AuthServiceProvider, $stateProvider) {
 
 
-    // Sets API ENDPOINTS
-    AuthServiceProvider.useRoutes({
-            login: '/api/v1/users/login',
-            logout: '/api/v1/users/logout',
-            fetch: '/api/v1/users/me'
+        // Sets API ENDPOINTS
+        AuthServiceProvider.useRoutes({
+                login: '/api/v1/users/login',
+                logout: '/api/v1/users/logout',
+                fetch: '/api/v1/users/logged-in'
+            });
+
+        // Append AUTH TOKEN to the headers for all http requests
+        AuthServiceProvider.tokenizeHttp('MY-CUSTOM-HEADER-KEY');
+
+        // Encrypt login requests like headers['Authorization'] = 'Basic' + ' ' + btoa(credentials.username + ':' + credentials.password)
+        AuthServiceProvider.useBasicAuthentication();
+
+
+        // Callback that handles the $http Response and returns the AuthData to the AuthService
+        AuthServiceProvider.parseHttpAuthData(function(data, headers, statusCode) {
+            // Logic
+            var authLevel = 1000; // ['public', 'author', 'editor'];
+
+            return {
+                user: data,
+                authLevel: authLevel,
+                token: headers['X-AUTH-AUTHTOKEN']
+            };
         });
 
-    // Append AUTH TOKEN to the headers for all http requests
-    AuthServiceProvider.tokenizeHttp('MY-CUSTOM-HEADER-KEY');
+        // If the user is already logged-in
+        if(angular.isDefined(window.persistentUserData) && angular.isDefined(window.persistentAuthLevel && angular.isDefined(window.persistentAuthToken) {
+            AuthServiceProvider.setLoggedUser(
+                window.persistentUserData,
+                window.persistentAuthToken,
+                window.persistentAuthLevel
+            );
+        }
 
-
-    // Callback that handles the $http Response and returns the AuthData to the AuthService
-    AuthServiceProvider.parseHttpAuthData(function(data, headers, statusCode) {
-        // Logic
-        // data.authLevel = 1000
-        // ...
-
-        return {
-            user: data,
-            authLevel: data.authLevel,
-            token: headers['X-MYAPP-AUTHTOKEN']
+        //Define protected states
+        var dashboard = {
+            name: 'dashboard',
+            url: '/admin/dashboard',
+            views: { ... },
+            data: { someValue: ..., otherValue: ... }
         };
+
+        // the authLevel property can be attached on dashboard or dashboard.data object,
+        // if attached on dashboard.data it will be inherited from other child states.
+        Object.defineProperty(dashboard.data, 'authLevel', {
+            value: 1000, // or ['author', 'editor', 'administrator']
+            writable: false,
+            configurable: false,
+            enumerable: true
+        });
+        $stateProvider
+            .state(dashboard)
     });
-
-    // If your user is already logged-in
-    if(angular.isDefined(window.persistentUserData) && angular.isDefined(window.persistentAuthToken) {
-        AuthServiceProvider.setLoggedUser(window.persistentUserData, window.persistentAuthToken);
-    }
-
-    //Define protected states
-    var dashboard = {
-        name: 'dashboard',
-        url: '/admin/dashboard',
-        views: { ... },
-        data: { someValue: ..., otherValue: ... }
-    };
-
-    // the authLevel property can be attached on dashboard or dashboard.data object,
-    // if attached on dashboard.data it will be inherited from other child states.
-    Object.defineProperty(dashboard.data, 'authLevel', {
-        value: 1000,
-        writable: false,
-        configurable: false,
-        enumerable: true
-    });
-    $stateProvider
-        .state(dashboard)
-});
 ```
 
 ##<a name="module-run"></a> Usage
@@ -106,17 +113,18 @@ angular.module('myApp').config(function(AuthServiceProvider, $stateProvider) {
 // app/auth.run.js
 
 angular
-    .module('myApp').run(function($rootScope, AuthService) {
+    .module('myApp')
+    .run(function($rootScope, AuthService) {
 
-    $rootScope.currentUser = AuthService.getCurrentUser();
-    $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
-
-    $rootScope.$on('hitmands.auth:update', function() {
         $rootScope.currentUser = AuthService.getCurrentUser();
         $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
-    });
 
-});
+        $rootScope.$on('hitmands.auth:update', function() {
+            $rootScope.currentUser = AuthService.getCurrentUser();
+            $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
+        });
+
+    });
 ```
 
 

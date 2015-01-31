@@ -32,23 +32,15 @@ var AuthCurrentUser = (function() {
       /* jshint ignore:start */
       for(var k in userData) {
          if(userData.hasOwnProperty(k) && k !== authProperty) {
-            Object.defineProperty(this, k, {
-               value: userData[k],
-               configurable: true,
-               enumerable: true,
-               writable: true
-            })
+            this[k] = userData[k];
          }
       }
       /* jshint ignore:end */
 
-      authLevel = authLevel || userData[authProperty] || 0;
       Object.defineProperty(this, authProperty, {
-         value: authLevel,
-         configurable: false,
          enumerable: true,
-         writable: false
-      })
+         value: authLevel || userData[authProperty] || 0
+      });
    }
 
    AuthCurrentUser.getAuthProperty = function() {
