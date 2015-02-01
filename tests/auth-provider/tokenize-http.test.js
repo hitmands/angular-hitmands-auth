@@ -28,6 +28,13 @@ describe('Angular Module Hitmands-Auth:AuthService.tokenizeHttp', function() {
       beforeEach(function() {
          angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_ ) {
             AuthServiceProvider = _AuthServiceProvider_;
+            AuthServiceProvider.parseHttpAuthData(function(data) {
+               return {
+                  user: data,
+                  authLevel: data.authLevel,
+                  token: data.token
+               };
+            });
             AuthServiceProvider.tokenizeHttp();
          });
       });
@@ -61,10 +68,9 @@ describe('Angular Module Hitmands-Auth:AuthService.tokenizeHttp', function() {
 
       it('AuthServiceProvider.tokenizeHttp should set authToken Value', angular.mock.inject(
             function(AuthService, $http) {
-
                expect(AuthService.getCurrentUser()).toBeNull();
 
-               AuthServiceProvider.setLoggedUser(Mocks.user, Mocks.user.token);
+               AuthServiceProvider.setLoggedUser(Mocks.user, Mocks.user.token, Mocks.user.authLevel);
 
                expect(AuthService.getCurrentUser()).toEqual(Mocks.user);
                expect(AuthService.getAuthenticationToken()).toEqual(Mocks.user.token);
@@ -93,6 +99,13 @@ describe('Angular Module Hitmands-Auth:AuthService.tokenizeHttp', function() {
          angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_ ) {
             AuthServiceProvider = _AuthServiceProvider_;
             AuthServiceProvider.tokenizeHttp('sample-token-key');
+            AuthServiceProvider.parseHttpAuthData(function(data) {
+               return {
+                  user: data,
+                  authLevel: data.authLevel,
+                  token: data.token
+               };
+            });
          });
       });
 
@@ -106,7 +119,7 @@ describe('Angular Module Hitmands-Auth:AuthService.tokenizeHttp', function() {
 
       it('AuthServiceProvider.tokenizeHttp should set authToken Value', angular.mock.inject(
             function(AuthService, $http) {
-
+               AuthService.unsetCurrentUser();
                expect(AuthService.getCurrentUser()).toBeNull();
 
                AuthServiceProvider.setLoggedUser(Mocks.user, Mocks.user.token);

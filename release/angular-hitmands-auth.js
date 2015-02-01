@@ -145,6 +145,7 @@
                $rootScope.$$phase || $rootScope.$digest();
             }, 0);
          }
+         angular.isFunction(_dataParser) || $exceptionHandler("AuthServiceProvider.parseHttpAuthData", "You need to set a Callback that handles the $http response");
          return {
             /**
           * Performs Login Request and sets the Auth Data

@@ -1,4 +1,5 @@
 describe('Angular Module Hitmands-Auth:AuthService', function() {
+
    'use strict';
    var $httpBackend, $rootScope, httpLoginHandler, httpLogoutHandler, $controller, AuthServiceProvider, getController;
 
@@ -27,6 +28,13 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
    beforeEach(function() {
       angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_ ) {
          AuthServiceProvider = _AuthServiceProvider_;
+         AuthServiceProvider.parseHttpAuthData(function(data) {
+            return {
+               user: data,
+               authLevel: data.authLevel,
+               token: data.token
+            };
+         });
          AuthServiceProvider.tokenizeHttp();
       });
    });

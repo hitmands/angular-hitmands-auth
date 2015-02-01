@@ -27,6 +27,13 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
    beforeEach(function() {
       angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_ ) {
          AuthServiceProvider = _AuthServiceProvider_;
+         AuthServiceProvider.parseHttpAuthData(function(data) {
+            return {
+               user: data,
+               authLevel: data.authLevel,
+               token: data.token
+            };
+         });
          AuthServiceProvider.tokenizeHttp();
       });
    });
@@ -73,6 +80,7 @@ describe('Angular Module Hitmands-Auth:AuthService', function() {
          expect(AuthService.isUserLoggedIn()).toBeTruthy();
          expect(AuthService.getCurrentUser()).toEqual(Mocks.user);
          expect(AuthService.getAuthenticationToken()).toEqual(Mocks.user.token);
+         AuthService.unsetCurrentUser()
       }
    ));
 

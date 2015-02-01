@@ -95,6 +95,9 @@ function AuthProviderFactory( $httpProvider ) {
 
 
    this.$get = function($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
+      if(!angular.isFunction(_dataParser)) {
+         $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'You need to set a Callback that handles the $http response');
+      }
 
       /**
        * @param {Object|null} newUserData

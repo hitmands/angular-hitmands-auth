@@ -1,7 +1,6 @@
 describe('Angular Module Hitmands-Auth', function() {
    'use strict';
    var $httpBackend, $rootScope, httpLoginHandler, httpLogoutHandler, $controller, AuthServiceProvider, spyAuthService, getController;
-
    // Authentication Test Cases
    var Mocks = {
       validCredentials: {
@@ -46,7 +45,13 @@ describe('Angular Module Hitmands-Auth', function() {
    beforeEach(function() {
       angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_, $stateProvider ) {
          AuthServiceProvider = _AuthServiceProvider_;
-
+         AuthServiceProvider.parseHttpAuthData(function(data) {
+            return {
+               user: data,
+               authLevel: data.authLevel,
+               token: data.token
+            };
+         });
          $stateProvider
             .state(Mocks.states.public)
             .state(Mocks.states.admin)
@@ -83,7 +88,7 @@ describe('Angular Module Hitmands-Auth', function() {
 
    it('Testing Module on $stateChangeStart event (Users-NOT-logged-in)', angular.mock.inject(
       function(AuthService, $state, $location) {
-
+         AuthService.unsetCurrentUser();
          expect(AuthService.isUserLoggedIn()).toBeFalsy();
 
          $state.transitionTo(Mocks.states.admin.name);

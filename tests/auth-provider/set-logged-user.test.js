@@ -27,6 +27,13 @@ describe('Angular Module Hitmands-Auth:AuthService.setLoggedUser', function() {
    beforeEach(function() {
       angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_ ) {
          AuthServiceProvider = _AuthServiceProvider_;
+         AuthServiceProvider.parseHttpAuthData(function(data) {
+            return {
+               user: data,
+               authLevel: data.authLevel,
+               token: data.token
+            };
+         });
       });
    });
 
@@ -37,58 +44,6 @@ describe('Angular Module Hitmands-Auth:AuthService.setLoggedUser', function() {
          $rootScope = _$rootScope_;
       }
    ));
-
-
-   it('AuthServiceProvider.setLoggedUser should not set Current User', angular.mock.inject(
-         function() {
-            AuthServiceProvider.setLoggedUser();
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser('invalidParameterType', 'invalidParameterType');
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser(['invalidParameterType'], ['invalidParameterType']);
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser(Infinity, NaN);
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser(null, null);
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser(Mocks.user);
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser(Mocks.user, '');
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser(Mocks.user, function() {});
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser(null, Mocks.user.token);
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser('invalidParameterType', Mocks.user.token);
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser(['invalidParameterType'], Mocks.user.token);
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-
-            AuthServiceProvider.setLoggedUser(function() {}, Mocks.user.token);
-            expect(AuthServiceProvider.getLoggedUser()).toBeNull();
-         })
-   );
-
-   it('AuthServiceProvider.setLoggedUser should set Current User', angular.mock.inject(
-         function() {
-            AuthServiceProvider.setLoggedUser(Mocks.user, Mocks.user.token);
-
-            expect(AuthServiceProvider.getLoggedUser()).toEqual(Mocks.user);
-            expect(AuthServiceProvider.getLoggedUser()).not.toBeNull();
-         })
-   );
-
-
 
 
    afterEach(function() {

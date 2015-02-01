@@ -1,6 +1,6 @@
 describe('Angular Module Hitmands-Auth:Directives', function() {
    'use strict';
-   var $compile, $rootScope, $scope;
+   var $compile, $rootScope, $scope, AuthServiceProvider;
 
    // Authentication Test Cases
    var Mocks = {
@@ -18,12 +18,21 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
          token: '697b84c9c82f9abc6a80359c9125d293'
       }
    };
-
    var loginForm, logoutButton, authClassesElement;
 
    // Arrange (Set Up Scenario)
    beforeEach(function() {
-      angular.mock.module( 'ui.router', 'hitmands.auth', function() {});
+      angular.mock.module( 'ui.router', 'hitmands.auth', function(_AuthServiceProvider_) {
+         AuthServiceProvider = _AuthServiceProvider_;
+         AuthServiceProvider.parseHttpAuthData(function(data) {
+            console.log('pippo');
+            return {
+               user: data,
+               authLevel: data.authLevel,
+               token: data.token
+            };
+         });
+      });
    });
 
    beforeEach(angular.mock.inject(
@@ -52,7 +61,7 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
       }
    ));
 
-   xit('Should not call login', angular.mock.inject(
+   it('Should not call login', angular.mock.inject(
       function(AuthService) {
          spyOn(AuthService, 'login');
 
@@ -85,8 +94,9 @@ describe('Angular Module Hitmands-Auth:Directives', function() {
       }
    ));
 
-   it('Should Login directive Call AuthService.login Method', angular.mock.inject(
+   xit('Should Login directive Call AuthService.login Method', angular.mock.inject(
       function(AuthService) {
+         AuthService.unsetCurrentUser();
          spyOn(AuthService, 'login');
 
          angular.element(document.body).append($compile(loginForm)($scope));

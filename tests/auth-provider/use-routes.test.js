@@ -26,6 +26,13 @@ describe('Angular Module Hitmands-Auth:AuthService.useRoutes', function() {
    beforeEach(function() {
       angular.mock.module( 'ui.router', 'hitmands.auth', function( _AuthServiceProvider_ ) {
          AuthServiceProvider = _AuthServiceProvider_;
+         AuthServiceProvider.parseHttpAuthData(function(data) {
+            return {
+               user: data,
+               authLevel: data.authLevel,
+               token: data.token
+            };
+         });
       });
    });
 
