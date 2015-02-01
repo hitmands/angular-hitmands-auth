@@ -65,16 +65,6 @@
       return parsedData;
    }
 
-   /**
- * Get the CurrentUser Object or Null
- *
- * @preserve
- * @returns {Object|null}
- */
-   function _getLoggedUser() {
-      return currentUser;
-   }
-
    /* @ngInject */
    function AuthProviderFactory($httpProvider) {
       var _dataParser, self = this, isBasicAuthEnabled = !1;
@@ -99,7 +89,7 @@
          $httpProvider.interceptors.push(function AuthServiceInterceptor() {
             return {
                "request": function AuthServiceRequestTransform(config) {
-                  _getLoggedUser() instanceof AuthCurrentUser && angular.isObject(config) && config.hasOwnProperty("headers") && (config.headers[tokenKey] = authToken);
+                  currentUser instanceof AuthCurrentUser && angular.isObject(config) && config.hasOwnProperty("headers") && (config.headers[tokenKey] = authToken);
                   return config;
                }
             };
@@ -245,7 +235,7 @@
           * @returns {Object|Null} - Current User Data
           */
             "getCurrentUser": function() {
-               return _getLoggedUser();
+               return currentUser;
             },
             /**
           * @preserve
@@ -253,7 +243,7 @@
           * @returns {Boolean}
           */
             "isUserLoggedIn": function() {
-               return _getLoggedUser() instanceof AuthCurrentUser;
+               return currentUser instanceof AuthCurrentUser;
             },
             /**
           * @preserve
@@ -263,7 +253,7 @@
           */
             "authorize": function(state, user) {
                var userAuthLevel, propertyToCheck = AuthCurrentUser.getAuthProperty();
-               user = user || _getLoggedUser();
+               user = user || currentUser;
                if (!angular.isObject(state)) {
                   $exceptionHandler("AuthService.authorize", "first param must be Object");
                   return !1;
