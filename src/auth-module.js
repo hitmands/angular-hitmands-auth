@@ -3,7 +3,8 @@
  * @name hitmands.auth
  * @module hitmands.auth
  **/
-
+var currentUser = null;
+var authToken = null;
 var routes = {
    "login": '/users/login',
    "logout": '/users/logout',
