@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-01-31
+ * @Date: 2015-02-01
  * @Version: 0.0.1
 ***/
 
@@ -75,10 +75,6 @@
       return currentUser;
    }
 
-   function _isUserLoggedIn() {
-      return _getLoggedUser() instanceof AuthCurrentUser;
-   }
-
    /* @ngInject */
    function AuthProviderFactory($httpProvider) {
       var _dataParser, self = this, isBasicAuthEnabled = !1;
@@ -103,7 +99,7 @@
          $httpProvider.interceptors.push(function AuthServiceInterceptor() {
             return {
                "request": function AuthServiceRequestTransform(config) {
-                  _isUserLoggedIn() && angular.isObject(config) && config.hasOwnProperty("headers") && (config.headers[tokenKey] = authToken);
+                  _getLoggedUser() instanceof AuthCurrentUser && angular.isObject(config) && config.hasOwnProperty("headers") && (config.headers[tokenKey] = authToken);
                   return config;
                }
             };
@@ -256,7 +252,7 @@
           * @returns {Boolean}
           */
             "isUserLoggedIn": function() {
-               return _isUserLoggedIn();
+               return _getLoggedUser() instanceof AuthCurrentUser;
             },
             /**
           * @preserve
