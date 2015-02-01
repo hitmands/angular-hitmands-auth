@@ -49,14 +49,3 @@ function _sanitizeParsedData( parsedData, $exceptionHandler ) {
    }
    return parsedData;
 }
-
-/**
- * Get the CurrentUser Object or Null
- *
- * @preserve
- * @returns {Object|null}
- */
-function _getLoggedUser() {
-
-   return currentUser;
-}

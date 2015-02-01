@@ -36,7 +36,7 @@ function AuthProviderFactory( $httpProvider ) {
             request: function AuthServiceRequestTransform(config) {
 
                if(
-                  (_getLoggedUser() instanceof AuthCurrentUser) &&
+                  (currentUser instanceof AuthCurrentUser) &&
                   angular.isObject(config) &&
                   config.hasOwnProperty('headers')
                ) {
@@ -248,7 +248,7 @@ function AuthProviderFactory( $httpProvider ) {
           */
          getCurrentUser: function() {
 
-            return _getLoggedUser();
+            return currentUser;
          },
 
          /**
@@ -258,7 +258,7 @@ function AuthProviderFactory( $httpProvider ) {
           */
          isUserLoggedIn: function() {
 
-            return (_getLoggedUser() instanceof AuthCurrentUser);
+            return (currentUser instanceof AuthCurrentUser);
          },
 
          /**
@@ -270,7 +270,7 @@ function AuthProviderFactory( $httpProvider ) {
          authorize: function( state, user ) {
             var userAuthLevel;
             var propertyToCheck = AuthCurrentUser.getAuthProperty();
-            user = user || _getLoggedUser();
+            user = user || currentUser;
 
             if( !angular.isObject(state) ) {
                $exceptionHandler('AuthService.authorize', 'first param must be Object');
