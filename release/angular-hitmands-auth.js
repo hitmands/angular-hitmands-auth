@@ -150,15 +150,10 @@
                };
                if (isBasicAuthEnabled) {
                   configs.headers = {
-                     "Authorization": "Basic " + btoa((credentials.username || "") + ":" + (credentials.password || ""))
+                     "Authorization": "Basic " + window.btoa((credentials.username || "") + ":" + (credentials.password || ""))
                   };
-                  try {
-                     delete credentials.username;
-                     delete credentials.password;
-                  } catch (e) {
-                     credentials.username = "";
-                     credentials.password = "";
-                  }
+                  delete credentials.username;
+                  delete credentials.password;
                }
                return $http.post(routes.login, credentials, configs).then(function(result) {
                   var data = _sanitizeParsedData(_dataParser(result.data, result.headers(), result.status), $exceptionHandler);
