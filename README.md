@@ -193,7 +193,8 @@ This directive requires a **FORM HTML ELEMENT**, if the `name` attribute is set,
 
 
 ##<a name="module-events"></a> Events
-Whenever a change occurs, the service generates an event via `$rootScope.broadcast`.
+Whenever a change occurs, the service generates an event via `$rootScope.$broadcast`.
+<small>
 - login:
   - success: **'hitmands.auth:login.resolved'** (param: event, result)
   - error: **'hitmands.auth:login.rejected'** (param: event, error)
@@ -204,11 +205,25 @@ Whenever a change occurs, the service generates an event via `$rootScope.broadca
   - success: **'hitmands.auth:fetch.resolved'** (param: event, result)
   - error: **'hitmands.auth:fetch.rejected'** (param: event, error)
 - update:  **'hitmands.auth:update'** (param: event)
+</small>
 
 ```javascript
 angular
     .module('myApp')
     .run(function($rootScope) {
+
+        $rootScope.$on('hitmands.auth:login.resolved', function(event, httpResult) {
+            console.log('Hey, we have a user logged in', httpResult);
+        });
+        $rootScope.$on('hitmands.auth:login.error', function(event, httpError) {
+            console.warn('Hey, something went wrong', httpError);
+        });
+
+        $rootScope.$on('hitmands.auth:update', function(event) {
+            console.log('There is a change in currentUser Object, user: ', AuthService.getCurrentUser());
+            console.log('There is a change in currentUser Object, user is logged in? ', AuthService.getAuthenticationToken());
+            console.log('There is a change in currentUser Object, token: ', AuthService.isUserLoggedIn());
+        });
 
     });
 ```
