@@ -446,7 +446,7 @@ angular
     .config(function(AuthServiceProvider, $stateProvider) {
         $stateProvider
             .state('admin', {
-                url: '/admin/,
+                url: '/admin/',
                 data: {
                     authLevel: 1000 // if the authLevel property is on the data object, it will inherited from other child states.
                 }
