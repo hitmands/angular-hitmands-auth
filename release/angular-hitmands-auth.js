@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-02-01
+ * @Date: 2015-02-02
  * @Version: 0.0.1
 ***/
 
@@ -254,7 +254,7 @@
                   return !1;
                }
                try {
-                  userAuthLevel = user[propertyToCheck];
+                  userAuthLevel = user[propertyToCheck] || 0;
                } catch (e) {
                   userAuthLevel = 0;
                }

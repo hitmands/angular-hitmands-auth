@@ -273,7 +273,7 @@ function AuthProviderFactory( $httpProvider ) {
             }
 
             try {
-               userAuthLevel = user[propertyToCheck]
+               userAuthLevel = user[propertyToCheck] || 0;
             } catch(e) {
                userAuthLevel = 0;
             }

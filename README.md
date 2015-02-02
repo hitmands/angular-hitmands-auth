@@ -10,6 +10,10 @@ Table of Content:
 * [Getting Started](#getting-started)
 * [Configuration](#module-config)
 * [Usage](#module-run)
+* [Directives](#module-directives)
+** [Login](#module-directives-login)
+** [Logout](#module-directives-logout)
+** [Classes Authentication](#module-directives-authclasses)
 
 
 ##<a name="getting-started"></a> Get Started
@@ -49,7 +53,7 @@ $ bower install --save angular-hitmands-auth
 
 angular
     .module('myApp')
-    .config(function(AuthServiceProvider, $stateProvider) {
+    .config(function(AuthServiceProvider, $stateProvider, $provide) {
 
 
         // Sets API ENDPOINTS
@@ -104,7 +108,22 @@ angular
             enumerable: true
         });
         $stateProvider
-            .state(dashboard)
+            .state(dashboard);
+
+
+        // if you want change the behaviour of AuthService, you can register a Service Decorator.
+        $provide.decorator('AuthService', function($delegate) {
+            $delegate.authorize = function(state, user) {
+                if(user.disposition === 'nice') {
+                    return true
+                }
+
+                return false;
+            };
+
+            return $delegate;
+        });
+
     });
 ```
 
@@ -124,7 +143,45 @@ angular
             $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
         });
 
+    })
+    .controller('LoginCtrl', function() {
+        this.credentials = {
+            username: '',
+            password: ''
+        };
     });
 ```
 
+##<a name="module-directives-login"></a> Login
+```html
+<div ng-controller="LoginCtrl as login" ng-hide="isUserLoggedIn">
 
+    <!-- Directive for login -->
+    <form name="userLoginForm" auth-login="login.credentials">
+        <input type="text" required ng-model="login.credentials.username"/>
+        <input type="password" required ng-model="login.credentials.password"/>
+        <button class="btn btn-primary" type="submit">Login</button>
+    </form>
+
+</div>
+```
+
+
+##<a name="module-directives-logout"></a> Logout
+```html
+<div class="" ng-show="isUserLoggedIn">
+
+    <!-- Directive for logout -->
+    <button class="btn btn-default" auth-logout>Logout</button>
+
+</div>
+```
+
+
+##<a name="module-directives-authclasses"></a> Authentication Classes
+```html
+<!-- class="user-is-logged-in" || class="user-not-logged-in" -->
+<body auth-classes>
+</body>
+
+```

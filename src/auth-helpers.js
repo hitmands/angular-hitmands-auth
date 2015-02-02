@@ -5,13 +5,14 @@
  * @returns {Boolean}
  * @private
  */
-function _authorizeLevelBased(stateAuthLevel, userAuthLevel) {
+function _authorizeLevelBased( stateAuthLevel, userAuthLevel ) {
    if( !angular.isNumber(userAuthLevel) ) {
       userAuthLevel = 0;
    }
 
    return ( userAuthLevel >= stateAuthLevel );
 }
+
 /**
  *
  * @param {Array} stateAuthRoles
@@ -19,7 +20,7 @@ function _authorizeLevelBased(stateAuthLevel, userAuthLevel) {
  * @returns {Boolean}
  * @private
  */
-function _authorizeRoleBased(stateAuthRoles, userAuthRoles) {
+function _authorizeRoleBased( stateAuthRoles, userAuthRoles ) {
    userAuthRoles = angular.isArray(userAuthRoles) ? userAuthRoles : [userAuthRoles];
 
    for(var i = 0, len = stateAuthRoles.length; i < len; i++) {
@@ -32,13 +33,15 @@ function _authorizeRoleBased(stateAuthRoles, userAuthRoles) {
 
    return false;
 }
+
 /**
  * @param parsedData
+ * @param {Object} $exceptionHandler - AngularJS Wrapper for javascript exception!
  * @returns {{user: Object|null, token: string|null}}
  * @private
  */
 function _sanitizeParsedData( parsedData, $exceptionHandler ) {
-   if( !angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
+   if( !angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1 ) {
       $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number|Array}');
 
       parsedData = {
