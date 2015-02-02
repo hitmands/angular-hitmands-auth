@@ -19,8 +19,8 @@ Table of Content:
   * [useRoutes](#module-provider-useroutes)
   * [tokenizeHttp](#module-provider-tokenizehttp)
   * [useBasicAuthentication](#module-provider-usebasicauthentication)
-  * [setLoggedUser](#module-provider-setloggeduser)
   * [parseHttpAuthData](#module-provider-parsehttpauthdata)
+  * [setLoggedUser](#module-provider-setloggeduser)
 * [API - AuthService](#module-service)
   * [setCurrentUser](#module-service-setcurrentuser)
   * [unsetCurrentUser](#module-service-unsetcurrentuser)
@@ -179,6 +179,7 @@ Whenever a change occurs, the module generates an event via `$rootScope.$broadca
   - success: **'hitmands.auth:fetch.resolved'** (params: event, result)
   - error:   **'hitmands.auth:fetch.rejected'** (params: event, error)
 - update:    **'hitmands.auth:update'** (param: event)
+- stateChangeError:    **'$stateChangeError'** (params: event, toState, toParams, fromState, fromParams, error)
 
 ```javascript
 angular
@@ -196,6 +197,12 @@ angular
             console.log('There is a change in currentUser Object, user: ', AuthService.getCurrentUser());
             console.log('There is a change in currentUser Object, user is logged in? ', AuthService.isUserLoggedIn());
             console.log('There is a change in currentUser Object, token: ', AuthService.getAuthenticationToken());
+        });
+
+        $rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
+            if(error.publisher === 'AuthService.authorize') {
+                console.log('User Cannot Access the state ' + state.name, error);
+            }
         });
 
     });
@@ -275,6 +282,38 @@ angular
     });
 ```
 
+
+##<a name="module-provider-parsehttpauthdata"></a> AuthServiceProvider.parseHttpAuthData
+This method sets a *middleware* between the $http responses and the AuthService.
+
+PARAM        | TYPE          | DESCRIPTION
+------------ | ------------- | -------------
+Callback     | Function      | This callback handles the $http responses (AuthService.login, AuthService.fetchLoggedUser) and returns the **authenticationData** (Object) to the AuthService. The **authenticationData** Object must have the following properties: user = Object, authLevel = Number|Array, token = String. The **type** of the authLevel property must match with the type of the authLevel property set on ui-router $state definition Object.
+
+```javascript
+angular
+    .module('myApp')
+    .config(function(AuthServiceProvider) {
+
+        AuthServiceProvider.parseHttpAuthData(function(data, headers, statusCode) {
+            var authenticationData = {};
+
+            // example:
+            /**
+                The authenticationData Object must have the following properties: user = Object, authLevel = Number|Array, token = String. The type of the authLevel property must match with the type of the authLevel property set on ui-router $state definition Object.
+            **/
+
+            authenticationData.user = data.user; // Object
+            authenticationData.authLevel = 1000; // Number|Array
+            authenticationData.token = headers['x-authentication-token']; // String
+
+            return authenticationData;
+        });
+
+    });
+```
+
+
 ##<a name="module-provider-tokenizehttp"></a> AuthServiceProvider.tokenizeHttp
 This method enables the interceptor and hangs the **Authentication Token** to the **headers** of each **$http request**.
 
@@ -328,28 +367,180 @@ angular
 ```
 
 
-##<a name="module-provider-parsehttpauthdata"></a> AuthServiceProvider.parseHttpAuthData
-This method sets a *middleware* between the $http responses and the AuthService.
+##<a name="module-service-setcurrentuser"></a> AuthService.setCurrentUser
+This method sets the AuthCurrentUser.
+Returns `true {Boolean}` if the AuthCurrentUser is instantiated, otherwise `false {Boolean}`.
 
-PARAM        | TYPE          | DESCRIPTION
------------- | ------------- | -------------
-Callback     | Function      | This callback handles the $http responses (AuthService.login, AuthService.fetchLoggedUser) and returns the **authenticationData** (Object) to the AuthService. The **authenticationData** Object must have the following properties: user = Object, authLevel = Number|Array, token = String. The **type** of the authLevel property must match with the type of the authLevel property set on ui-router $state definition Object.
+PARAM         | TYPE                | DESCRIPTION
+------------- | ------------------- | -------------
+user          | Object              | The Object for AuthCurrentUser instance.
+authLevel     | Number|Array        | The **type** of this param must match with the type of the authLevel property set on ui-router $state definition Object.
+token         | String              | The session token
 
 ```javascript
 angular
     .module('myApp')
-    .config(function(AuthServiceProvider) {
+    .run(function(AuthService) {
 
-        AuthServiceProvider.parseHttpAuthData(function(data, headers, statusCode) {
-            var authenticationData = {};
+        if(window.persistentUserData && ...) {
+            AuthService.setCurrentUser(window.persistentUserData, ['public', 'author', 'editor'], 'tokenString');
+        }
 
-            // example
-            authenticationData.user = data.user; // Object
-            authenticationData.authLevel = 1000; // Number|Array
-            authenticationData.token = headers['x-authentication-token']; // String
+    });
+```
 
-            return authenticationData;
-        });
+##<a name="module-service-unsetcurrentuser"></a> AuthService.unsetCurrentUser
+This method removes the AuthCurrentUser.
+Returns `true {Boolean}`.
+
+```javascript
+angular
+    .module('myApp')
+    .run(function(AuthService) {
+
+            AuthService.unsetCurrentUser();
+
+    });
+```
+
+##<a name="module-service-getcurrentuser"></a> AuthService.getCurrentUser
+Returns `AuthCurrentUser {Object}` if the user is logged in, `null {Null}` otherwise.
+
+```javascript
+angular
+    .module('myApp')
+    .run(function(AuthService) {
+
+            AuthService.getCurrentUser();
+
+    });
+```
+
+
+##<a name="module-service-isuserloggedin"></a> AuthService.isUserLoggedIn
+Returns `{Boolean}`.
+
+```javascript
+angular
+    .module('myApp')
+    .run(function(AuthService) {
+
+            AuthService.isUserLoggedIn();
+
+    });
+```
+
+
+##<a name="module-service-authorize"></a> AuthService.authorize
+This method checks if the AuthCurrentUser is authorized, is called on each $stateChangeStart and hitmands.auth:update events.
+Returns `{Boolean}`.
+
+PARAM               | TYPE                | DESCRIPTION
+------------------- | ------------------- | -------------
+state               | Object              | The state (ui-router.$state) object.
+user (optional)     | Object              | Default `AuthCurrentUser|Null`
+
+```javascript
+angular
+    .module('myApp')
+    .config(function(AuthServiceProvider, $stateProvider) {
+        $stateProvider
+            .state('admin', {
+                url: '/admin/,
+                data: {
+                    authLevel: 1000 // if the authLevel property is on the data object, it will inherited from other child states.
+                }
+            })
+            .state('admin-2', {
+                url: '/another-admin/',
+                authLevel: ['author', 'editor', 'manager', 'administrator']
+            });
+    })
+    .run(function(AuthService, $state) {
+
+        // Of course you have to implement only one type of authentication methods (by Number or by Roles).
+        // This module works well with both.
+
+        AuthService.setCurrentUser({ name: 'Giuseppe' }, 100, 'authToken');
+        AuthService.authorize($state.get('admin'), AuthService.getCurrentUser()); // false
+
+        AuthService.unsetCurrentUser();
+        AuthService.setCurrentUser({ name: 'Giuseppe' }, ['admin'], 'authToken');
+        AuthService.authorize($state.get('admin-2'), AuthService.getCurrentUser()); // true
+
+    });
+```
+
+
+##<a name="module-service-fetchloggeduser"></a> AuthService.fetchLoggedUser
+This method performs a **$http GET request** to routes.fetch, updates the AuthCurrentUser Object and triggers the 'hitmands.auth:fetch.success' or 'hitmands.auth:fetch.error' angular event.
+Returns `{Promise}`.
+
+```javascript
+angular
+    .module('myApp')
+    .run(function(AuthService) {
+
+            AuthService
+            .fetchLoggedUser()
+            .then(
+            function(result) {
+                console.log('Fetch AuthData Success', success);
+            },
+            function(error) {
+                console.log('Fetch AuthData Error', error);
+            );
+
+    });
+```
+
+##<a name="module-service-login"></a> AuthService.login
+This method performs a **$http POST request** to routes.login, updates the AuthCurrentUser Object and triggers the 'hitmands.auth:login.success' or 'hitmands.auth:login.error' angular event. This method is also invoked by [login directive](#module-directives-login)
+Returns `{Promise}`.
+
+PARAM               | TYPE                | DESCRIPTION
+------------------- | ------------------- | -------------
+credentials         | Object              | An object to send, if the Basic Access Authentication is enabled, the following properties are required: username, password.
+
+```javascript
+angular
+    .module('myApp')
+    .run(function(AuthService) {
+
+            AuthService
+            .login({
+                username: 'myusername',
+                password: 'mypassword'
+            })
+            .then(
+            function(result) {
+                console.log('Login Success', success);
+            },
+            function(error) {
+                console.log('Login Error', error);
+            );
+
+    });
+```
+
+##<a name="module-service-logout"></a> AuthService.logout
+This method performs a **$http POST request** to routes.logout, remove the AuthCurrentUser Object and triggers the 'hitmands.auth:logout.success' or 'hitmands.auth:logout.error' angular event. This method is also invoked by [logout directive](#module-directives-logout).
+Returns `{Promise}`.
+
+```javascript
+angular
+    .module('myApp')
+    .run(function(AuthService) {
+
+            AuthService
+            .logout()
+            .then(
+            function(result) {
+                console.log('Logout Success', success);
+            },
+            function(error) {
+                console.log('Logout Error', error);
+            );
 
     });
 ```
