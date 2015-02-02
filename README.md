@@ -246,8 +246,7 @@ This method configures API endpoints for *login*, *logout*, *fetching* authentic
 
 PARAM         | TYPE          | DESCRIPTION
 ------------- | ------------- | -------------
-newRoutes     | Object        | An Object of strings (login, logout, fetch)
-              |               | that defineas the routes for user authentication
+newRoutes     | Object        | A map of strings (login, logout, fetch) that defines the routes for user authentication.
 
 ```javascript
 angular
@@ -272,6 +271,23 @@ angular
             .useRoutes({
                 fetch: '/api/v1/users/current.json'
             });
+
+    });
+```
+
+##<a name="module-provider-tokenizeHttp"></a> AuthServiceProvider.tokenizeHttp
+This method enables the interceptor and hangs the **Authentication Token** to the **headers** of each  $http **request**.
+
+PARAM                    | TYPE          | DESCRIPTION
+------------------------ | ------------- | -------------
+headerKey (optional)     | String        | Default `'x-auth-token'`, the key-header for hanging the token as value
+
+```javascript
+angular
+    .module('myApp')
+    .config(function(AuthServiceProvider) {
+
+        AuthServiceProvider.tokenizeHttp('X-MY-CUSTOM-AUTH-KEY');
 
     });
 ```
