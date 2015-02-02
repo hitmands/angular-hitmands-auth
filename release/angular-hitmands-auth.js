@@ -4,7 +4,7 @@
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
  * @Date: 2015-02-02
- * @Version: 0.0.1
+ * @Version: 1.0.0
 ***/
 
 (function(window, angular) {
