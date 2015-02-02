@@ -288,7 +288,8 @@ This method sets a *middleware* between the $http responses and the AuthService.
 
 PARAM        | TYPE          | DESCRIPTION
 ------------ | ------------- | -------------
-Callback     | Function      | This callback handles the $http responses (AuthService.login, AuthService.fetchLoggedUser) and returns the **authenticationData** (Object) to the AuthService. The **authenticationData** Object must have the following properties: user = Object, authLevel = Number|Array, token = String. The **type** of the authLevel property must match with the type of the authLevel property set on ui-router $state definition Object.
+Callback     | Function      | This callback handles the $http responses (AuthService.login, AuthService.fetchLoggedUser) and returns the **authenticationData** (Object) to the AuthService.
+NOTE: The **authenticationData** Object must have the following properties: user = Object, authLevel = Number|Array, token = String. The **type** of the authLevel property must match with the type of the authLevel property set on ui-router $state definition Object.
 
 ```javascript
 angular
@@ -354,7 +355,7 @@ PARAM         | TYPE                | DESCRIPTION
 ------------- | ------------------- | -------------
 user          | Object              | The Object for AuthCurrentUser instance.
 token         | String              | The session token
-authLevel     | Number|Array        | The **type** of this param must match with the type of the authLevel property set on ui-router $state definition Object.
+authLevel     | Number or Array        | The **type** of this param must match with the type of the authLevel property set on ui-router $state definition Object.
 
 ```javascript
 angular
