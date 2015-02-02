@@ -204,7 +204,7 @@ angular
 
 
 ##<a name="module-directives-login"></a> Login
-This directive requires a **FORM HTML ELEMENT**, if the `name` attribute is set, the directive performs a basic validation. You need to pass a Javascript Object to directive like `{username: '', password=''[, ...]}`.
+This directive requires a **FORM HTML ELEMENT**, if the `name` attribute is set, the directive performs a basic validation. You need to pass a Javascript Object to the directive, like `{username: '', password=''[, ...]}`, (The properties username and password are required if the [Basic Access Authentication](#module-provider-usebasicauthentication) is enabled).
 
 ```html
 <div>
@@ -275,8 +275,8 @@ angular
     });
 ```
 
-##<a name="module-provider-tokenizeHttp"></a> AuthServiceProvider.tokenizeHttp
-This method enables the interceptor and hangs the **Authentication Token** to the **headers** of each  $http **request**.
+##<a name="module-provider-tokenizehttp"></a> AuthServiceProvider.tokenizeHttp
+This method enables the interceptor and hangs the **Authentication Token** to the **headers** of each **$http request**.
 
 PARAM                    | TYPE          | DESCRIPTION
 ------------------------ | ------------- | -------------
@@ -288,6 +288,64 @@ angular
     .config(function(AuthServiceProvider) {
 
         AuthServiceProvider.tokenizeHttp('X-MY-CUSTOM-AUTH-KEY');
+
+    });
+```
+
+##<a name="module-provider-usebasicauthentication"></a> AuthServiceProvider.useBasicAuthentication
+This method enables the **Basic Access Authentication** for http login request.
+
+```javascript
+angular
+    .module('myApp')
+    .config(function(AuthServiceProvider) {
+
+        AuthServiceProvider.useBasicAuthentication();
+
+    });
+```
+
+
+##<a name="module-provider-setloggeduser"></a> AuthServiceProvider.setLoggedUser
+This method enables the http interceptor and hangs the **Authentication Token** to the **headers** of each **$http request**.
+
+PARAM                    | TYPE          | DESCRIPTION
+------------------------ | ------------- | -------------
+headerKey (optional)     | String        | Default `'x-auth-token'`, the key-header for hanging the token as value
+
+```javascript
+angular
+    .module('myApp')
+    .config(function(AuthServiceProvider) {
+
+        AuthServiceProvider.setLoggedUser('X-MY-CUSTOM-AUTH-KEY');
+
+    });
+```
+
+
+##<a name="module-provider-parsehttpauthdata"></a> AuthServiceProvider.parseHttpAuthData
+This method sets a *middleware* between the $http responses and the AuthService.
+
+PARAM        | TYPE          | DESCRIPTION
+------------ | ------------- | -------------
+Callback     | Function      | This callback handles the $http responses (AuthService.login, AuthService.fetchLoggedUser) and returns the **authenticationData** (Object) to the AuthService. The **authenticationData** Object must have the following properties: user = Object, authLevel = Number|Array, token = String.
+
+```javascript
+angular
+    .module('myApp')
+    .config(function(AuthServiceProvider) {
+
+        AuthServiceProvider.parseHttpAuthData(function(data, headers, statusCode) {
+            var authenticationData = {};
+
+            // example
+            authenticationData.user = data.user; // Object
+            authenticationData.authLevel = 1000; // Number|Array
+            authenticationData.token = headers['x-authentication-token']; // String
+
+            return authenticationData;
+        });
 
     });
 ```
