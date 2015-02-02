@@ -15,7 +15,21 @@ Table of Content:
   * [Logout](#module-directives-logout)
   * [Classes Authentication](#module-directives-authclasses)
 * [Events](#module-events)
-
+* [API - AuthServiceProvider](#module-provider)
+  * [useRoutes](#module-provider-useroutes)
+  * [tokenizeHttp](#module-provider-tokenizehttp)
+  * [useBasicAuthentication](#module-provider-usebasicauthentication)
+  * [setLoggedUser](#module-provider-setloggeduser)
+  * [parseHttpAuthData](#module-provider-parsehttpauthdata)
+* [API - AuthService](#module-service)
+  * [setCurrentUser](#module-service-setcurrentuser)
+  * [unsetCurrentUser](#module-service-unsetcurrentuser)
+  * [getCurrentUser](#module-service-getcurrentuser)
+  * [isUserLoggedIn](#module-service-isuserloggedin)
+  * [authorize](#module-service-authorize)
+  * [fetchLoggedUser](#module-service-fetchloggeduser)
+  * [login](#module-service-login)
+  * [logout](#module-service-logout)
 
 ##<a name="getting-started"></a> Get Started
 ```
@@ -57,7 +71,7 @@ angular
     .config(function(AuthServiceProvider, $stateProvider, $provide) {
 
 
-        // Sets API ENDPOINTS
+        // Set API ENDPOINTS
         AuthServiceProvider.useRoutes({
                 login: '/api/v1/users/login',
                 logout: '/api/v1/users/logout',
@@ -158,7 +172,7 @@ This directive requires a **FORM HTML ELEMENT**, if the `name` attribute is set,
 
 ```html
 <div>
-    Howdy, <strong>{{ currentUser || 'Guest' }}</strong>
+    Howdy, <strong>{{ currentUser.name || 'Guest' }}</strong>
 </div>
 <div ng-controller="LoginCtrl" ng-hide="isUserLoggedIn">
 
@@ -193,19 +207,17 @@ This directive requires a **FORM HTML ELEMENT**, if the `name` attribute is set,
 
 
 ##<a name="module-events"></a> Events
-Whenever a change occurs, the service generates an event via `$rootScope.$broadcast`.
-<small>
+Whenever a change occurs, the module generates an event via `$rootScope.$broadcast` method.
 - login:
-  - success: **'hitmands.auth:login.resolved'** (param: event, result)
-  - error: **'hitmands.auth:login.rejected'** (param: event, error)
+  - success: **'hitmands.auth:login.resolved'** (params: event, result)
+  - error:   **'hitmands.auth:login.rejected'** (params: event, error)
 - logout:
-  - success: **'hitmands.auth:logout.resolved'** (param: event, result)
-  - error: **'hitmands.auth:logout.rejected'** (param: event, error)
+  - success: **'hitmands.auth:logout.resolved'** (params: event, result)
+  - error:   **'hitmands.auth:logout.rejected'** (params: event, error)
 - fetch:
-  - success: **'hitmands.auth:fetch.resolved'** (param: event, result)
-  - error: **'hitmands.auth:fetch.rejected'** (param: event, error)
-- update:  **'hitmands.auth:update'** (param: event)
-</small>
+  - success: **'hitmands.auth:fetch.resolved'** (params: event, result)
+  - error:   **'hitmands.auth:fetch.rejected'** (params: event, error)
+- update:    **'hitmands.auth:update'** (param: event)
 
 ```javascript
 angular
@@ -213,16 +225,51 @@ angular
     .run(function($rootScope) {
 
         $rootScope.$on('hitmands.auth:login.resolved', function(event, httpResult) {
-            console.log('Hey, we have a user logged in', httpResult);
+            console.info('Hey, we have a new user logged in', httpResult);
         });
         $rootScope.$on('hitmands.auth:login.error', function(event, httpError) {
-            console.warn('Hey, something went wrong', httpError);
+            console.warn('Hey, something went wrong in user authentication', httpError);
         });
 
         $rootScope.$on('hitmands.auth:update', function(event) {
             console.log('There is a change in currentUser Object, user: ', AuthService.getCurrentUser());
-            console.log('There is a change in currentUser Object, user is logged in? ', AuthService.getAuthenticationToken());
-            console.log('There is a change in currentUser Object, token: ', AuthService.isUserLoggedIn());
+            console.log('There is a change in currentUser Object, user is logged in? ', AuthService.isUserLoggedIn());
+            console.log('There is a change in currentUser Object, token: ', AuthService.getAuthenticationToken());
+        });
+
+    });
+```
+
+
+##<a name="module-api-provider"></a> AuthServiceProvider
+Whenever a change occurs, the module generates an event via `$rootScope.$broadcast` method.
+- login:
+  - success: **'hitmands.auth:login.resolved'** (params: event, result)
+  - error:   **'hitmands.auth:login.rejected'** (params: event, error)
+- logout:
+  - success: **'hitmands.auth:logout.resolved'** (params: event, result)
+  - error:   **'hitmands.auth:logout.rejected'** (params: event, error)
+- fetch:
+  - success: **'hitmands.auth:fetch.resolved'** (params: event, result)
+  - error:   **'hitmands.auth:fetch.rejected'** (params: event, error)
+- update:    **'hitmands.auth:update'** (param: event)
+
+```javascript
+angular
+    .module('myApp')
+    .run(function($rootScope) {
+
+        $rootScope.$on('hitmands.auth:login.resolved', function(event, httpResult) {
+            console.info('Hey, we have a new user logged in', httpResult);
+        });
+        $rootScope.$on('hitmands.auth:login.error', function(event, httpError) {
+            console.warn('Hey, something went wrong in user authentication', httpError);
+        });
+
+        $rootScope.$on('hitmands.auth:update', function(event) {
+            console.log('There is a change in currentUser Object, user: ', AuthService.getCurrentUser());
+            console.log('There is a change in currentUser Object, user is logged in? ', AuthService.isUserLoggedIn());
+            console.log('There is a change in currentUser Object, token: ', AuthService.getAuthenticationToken());
         });
 
     });
