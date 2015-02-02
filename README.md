@@ -289,6 +289,8 @@ This method sets a *middleware* between the $http responses and the AuthService.
 PARAM        | TYPE          | DESCRIPTION
 ------------ | ------------- | -------------
 Callback     | Function      | This callback handles the $http responses (AuthService.login, AuthService.fetchLoggedUser) and returns the **authenticationData** (Object) to the AuthService.
+
+
 NOTE: The **authenticationData** Object must have the following properties: user = Object, authLevel = Number|Array, token = String. The **type** of the authLevel property must match with the type of the authLevel property set on ui-router $state definition Object.
 
 ```javascript
