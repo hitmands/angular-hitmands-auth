@@ -467,7 +467,7 @@ angular
         AuthService.authorize($state.get('admin'), AuthService.getCurrentUser()); // false
 
         AuthService.unsetCurrentUser();
-        AuthService.setCurrentUser({ name: 'Giuseppe' }, ['admin'], 'authToken');
+        AuthService.setCurrentUser({ name: 'Giuseppe' }, ['administrator'], 'authToken');
         AuthService.authorize($state.get('admin-2'), AuthService.getCurrentUser()); // true
 
     });
