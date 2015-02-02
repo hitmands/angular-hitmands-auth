@@ -32,7 +32,7 @@ Table of Content:
   * [logout](#module-service-logout)
 
 ##<a name="getting-started"></a> Get Started
-```
+```shell
 $ bower install --save angular-hitmands-auth
 ```
 
@@ -300,7 +300,9 @@ angular
 
             // example:
             /**
-                The authenticationData Object must have the following properties: user = Object, authLevel = Number|Array, token = String. The type of the authLevel property must match with the type of the authLevel property set on ui-router $state definition Object.
+                The authenticationData Object must have the following properties:
+                user = Object, authLevel = Number|Array, token = String.
+                The type of the authLevel property must match with the type of the authLevel property set on ui-router $state definition Object.
             **/
 
             authenticationData.user = data.user; // Object
@@ -495,7 +497,7 @@ angular
 ```
 
 ##<a name="module-service-login"></a> AuthService.login
-This method performs a **$http POST request** to routes.login, updates the AuthCurrentUser Object and triggers the 'hitmands.auth:login.success' or 'hitmands.auth:login.error' angular event. This method is also invoked by [login directive](#module-directives-login)
+This method performs a **$http POST request** to routes.login, updates the AuthCurrentUser Object and triggers the 'hitmands.auth:login.success' or 'hitmands.auth:login.error' angular event. This method is also invoked by [login directive](#module-directives-login).
 Returns `{Promise}`.
 
 PARAM               | TYPE                | DESCRIPTION
