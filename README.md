@@ -11,9 +11,10 @@ Table of Content:
 * [Configuration](#module-config)
 * [Usage](#module-run)
 * [Directives](#module-directives)
-** [Login](#module-directives-login)
-** [Logout](#module-directives-logout)
-** [Classes Authentication](#module-directives-authclasses)
+  * [Login](#module-directives-login)
+  * [Logout](#module-directives-logout)
+  * [Classes Authentication](#module-directives-authclasses)
+* [Events](#module-events)
 
 
 ##<a name="getting-started"></a> Get Started
@@ -24,7 +25,7 @@ $ bower install --save angular-hitmands-auth
 
 ```html
 <!doctype html>
-<html ng-app="myApp">
+<html data-ng-app="myApp">
 <head>
     <!-- Install AngularJS -->
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.7/angular.min.js"></script>
@@ -138,14 +139,14 @@ angular
         $rootScope.currentUser = AuthService.getCurrentUser();
         $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
 
-        $rootScope.$on('hitmands.auth:update', function() {
+        $rootScope.$on('hitmands.auth:update', function(event) {
             $rootScope.currentUser = AuthService.getCurrentUser();
             $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
         });
 
     })
-    .controller('LoginCtrl', function() {
-        this.credentials = {
+    .controller('LoginCtrl', function($scope) {
+        $scope.credentials = {
             username: '',
             password: ''
         };
@@ -153,13 +154,18 @@ angular
 ```
 
 ##<a name="module-directives-login"></a> Login
+This directive requires a **FORM HTML ELEMENT**, if the `name` attribute is set, the directive performs a basic validation. You need to pass a Javascript Object to directive like `{username: '', password=''[, ...]}`.
+
 ```html
-<div ng-controller="LoginCtrl as login" ng-hide="isUserLoggedIn">
+<div>
+    Howdy, <strong>{{ currentUser || 'Guest' }}</strong>
+</div>
+<div ng-controller="LoginCtrl" ng-hide="isUserLoggedIn">
 
     <!-- Directive for login -->
-    <form name="userLoginForm" auth-login="login.credentials">
-        <input type="text" required ng-model="login.credentials.username"/>
-        <input type="password" required ng-model="login.credentials.password"/>
+    <form name="userLoginForm" auth-login="credentials">
+        <input type="text" required ng-model="credentials.username"/>
+        <input type="password" required ng-model="credentials.password"/>
         <button class="btn btn-primary" type="submit">Login</button>
     </form>
 
@@ -180,8 +186,29 @@ angular
 
 ##<a name="module-directives-authclasses"></a> Authentication Classes
 ```html
-<!-- class="user-is-logged-in" || class="user-not-logged-in" -->
-<body auth-classes>
-</body>
+<!-- class="user-is-logged-in || user-not-logged-in" -->
+<body auth-classes>...</body>
 
+```
+
+
+##<a name="module-events"></a> Events
+Whenever a change occurs, the service generates an event via `$rootScope.broadcast`.
+- login:
+  - success: **'hitmands.auth:login.resolved'** (param: event, result)
+  - error: **'hitmands.auth:login.rejected'** (param: event, error)
+- logout:
+  - success: **'hitmands.auth:logout.resolved'** (param: event, result)
+  - error: **'hitmands.auth:logout.rejected'** (param: event, error)
+- fetch:
+  - success: **'hitmands.auth:fetch.resolved'** (param: event, result)
+  - error: **'hitmands.auth:fetch.rejected'** (param: event, error)
+- update:  **'hitmands.auth:update'** (param: event)
+
+```javascript
+angular
+    .module('myApp')
+    .run(function($rootScope) {
+
+    });
 ```
