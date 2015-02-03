@@ -1,4 +1,4 @@
-describe('Angular Module Hitmands-Auth:AuthService', function() {
+ddescribe('Angular Module Hitmands-Auth:AuthService', function() {
    'use strict';
 
    var AuthServiceProvider, $rootScope, $scope, $exceptionHandlerProvider;

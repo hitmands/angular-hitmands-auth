@@ -132,7 +132,7 @@ function AuthProviderFactory( $httpProvider ) {
 
             if(isBasicAuthEnabled) {
                configs.headers = {
-                  Authorization : 'Basic' + ' ' + window.btoa((credentials.username || '') + ':' + (credentials.password || ''))
+                  Authorization : 'Basic ' + window.btoa((credentials.username || '') + ':' + (credentials.password || ''))
                };
 
                delete credentials['username'];

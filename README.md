@@ -380,7 +380,7 @@ Returns `true {Boolean}` if the AuthCurrentUser is instantiated, otherwise `fals
 PARAM         | TYPE                | DESCRIPTION
 ------------- | ------------------- | -------------
 user          | Object              | The Object for AuthCurrentUser instance.
-authLevel     | Number|Array        | The **type** of this param must match with the type of the authLevel property set on ui-router $state definition Object.
+authLevel     | Number/Array        | The **type** of this param must match with the type of the authLevel property set on ui-router $state definition Object.
 token         | String              | The session token
 
 ```javascript
@@ -491,7 +491,7 @@ angular
             .fetchLoggedUser()
             .then(
             function(result) {
-                console.log('Fetch AuthData Success', success);
+                console.log('Fetch AuthData Success', result);
             },
             function(error) {
                 console.log('Fetch AuthData Error', error);
@@ -520,7 +520,7 @@ angular
             })
             .then(
             function(result) {
-                console.log('Login Success', success);
+                console.log('Login Success', result);
             },
             function(error) {
                 console.log('Login Error', error);
@@ -542,7 +542,7 @@ angular
             .logout()
             .then(
             function(result) {
-                console.log('Logout Success', success);
+                console.log('Logout Success', result);
             },
             function(error) {
                 console.log('Logout Error', error);
