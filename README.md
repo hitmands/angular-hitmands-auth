@@ -81,7 +81,7 @@ angular
         // Append AUTH TOKEN to the headers for all http requests
         AuthServiceProvider.tokenizeHttp('MY-CUSTOM-HEADER-KEY');
 
-        // Encrypt login requests like headers['Authorization'] = 'Basic' + ' ' + btoa(credentials.username + ':' + credentials.password)
+        // Encrypt login requests like headers['Authorization'] = 'Basic ' + btoa(credentials.username + ':' + credentials.password)
         AuthServiceProvider.useBasicAuthentication();
 
 
@@ -98,11 +98,11 @@ angular
         });
 
         // If the user is already logged-in
-        if(angular.isDefined(window.persistentUserData) && angular.isDefined(window.persistentAuthLevel && angular.isDefined(window.persistentAuthToken) {
+        if(angular.isDefined(window.persistentUserData) && ...) {
             AuthServiceProvider.setLoggedUser(
                 window.persistentUserData,
-                window.persistentAuthToken,
-                window.persistentAuthLevel
+                'token',
+                ['public', 'author']
             );
         }
 
@@ -201,7 +201,7 @@ angular
 
         $rootScope.$on('$stateChangeError', function(event, toState, toParams, fromState, fromParams, error) {
             if(error.publisher === 'AuthService.authorize') {
-                console.log('User Cannot Access the state ' + state.name, error);
+                console.log('User Cannot Access the state ' + toState.name, error);
             }
         });
 
@@ -288,10 +288,8 @@ This method sets a *middleware* between the $http responses and the AuthService.
 
 PARAM        | TYPE          | DESCRIPTION
 ------------ | ------------- | -------------
-Callback     | Function      | This callback handles the $http responses (AuthService.login, AuthService.fetchLoggedUser) and returns the **authenticationData** (Object) to the AuthService.
+Callback     | Function      | This callback handles the $http responses (AuthService.login, AuthService.fetchLoggedUser) and returns the `{user: Object, token: String, authLevel:Number/Array}` to the AuthService.
 
-
-NOTE: The **authenticationData** Object must have the following properties: user = Object, authLevel = Number|Array, token = String. The **type** of the authLevel property must match with the type of the authLevel property set on ui-router $state definition Object.
 
 ```javascript
 angular
@@ -301,13 +299,16 @@ angular
         AuthServiceProvider.parseHttpAuthData(function(data, headers, statusCode) {
             var authenticationData = {};
 
-            // example:
             /**
                 The authenticationData Object must have the following properties:
-                user = Object, authLevel = Number|Array, token = String.
-                The type of the authLevel property must match with the type of the authLevel property set on ui-router $state definition Object.
+                user = Object,
+                authLevel = Number|Array,
+                token = String
+                The type of the authLevel property must match with the type of the authLevel
+                property set on ui-router $state definition Object.
             **/
 
+            // example:
             authenticationData.user = data.user; // Object
             authenticationData.authLevel = 1000; // Number|Array
             authenticationData.token = headers['x-authentication-token']; // String
