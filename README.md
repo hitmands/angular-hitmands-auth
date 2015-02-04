@@ -405,7 +405,7 @@ angular
     .module('myApp')
     .run(function(AuthService) {
 
-            AuthService.unsetCurrentUser();
+        AuthService.unsetCurrentUser();
 
     });
 ```
@@ -418,7 +418,7 @@ angular
     .module('myApp')
     .run(function(AuthService) {
 
-            AuthService.getCurrentUser();
+        AuthService.getCurrentUser();
 
     });
 ```
@@ -432,7 +432,7 @@ angular
     .module('myApp')
     .run(function(AuthService) {
 
-            AuthService.isUserLoggedIn();
+        AuthService.isUserLoggedIn();
 
     });
 ```
