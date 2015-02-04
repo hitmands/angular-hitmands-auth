@@ -278,8 +278,10 @@ function AuthProviderFactory( $httpProvider ) {
                userAuthLevel = 0;
             }
 
-            var stateAuthLevel = ((angular.isObject(state.data) && state.data.hasOwnProperty(propertyToCheck)) ?
-                  state.data[propertyToCheck] : state[propertyToCheck]) || 0;
+            var stateAuthLevel = (
+                  (angular.isObject(state.data) && state.data.hasOwnProperty(propertyToCheck)) ?
+                     state.data[propertyToCheck] : state[propertyToCheck]
+               ) || 0;
 
             if(angular.isNumber(stateAuthLevel)) {
                return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
