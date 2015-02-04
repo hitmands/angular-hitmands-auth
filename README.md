@@ -168,18 +168,19 @@ angular
 ```
 
 ##<a name="module-events"></a> Events
-Whenever a change occurs, the module generates an event via `$rootScope.$broadcast` method.
-- login:
-  - success: **'hitmands.auth:login.resolved'** (params: event, result)
-  - error:   **'hitmands.auth:login.rejected'** (params: event, error)
-- logout:
-  - success: **'hitmands.auth:logout.resolved'** (params: event, result)
-  - error:   **'hitmands.auth:logout.rejected'** (params: event, error)
-- fetch:
-  - success: **'hitmands.auth:fetch.resolved'** (params: event, result)
-  - error:   **'hitmands.auth:fetch.rejected'** (params: event, error)
-- update:    **'hitmands.auth:update'** (param: event)
-- stateChangeError:    **'$stateChangeError'** (params: event, toState, toParams, fromState, fromParams, error)
+Whenever a change occurs, the module generates an event via `$rootScope.$broadcast` method. You can register a listener via `$rootScope.$on` and the callback passed will be invoked with the following params:
+
+NAME                                 | PARAMS PASSED                                              | Publisher
+------------------------------------ | ---------------------------------------------------------- | -------------
+hitmands.auth:update                 | event                                                      | *All methods that updating the CurrentUser Object*
+hitmands.auth:login.resolved         | event, result                                              | AuthService.login **success**
+hitmands.auth:login.rejected         | event, error                                               | AuthService.login **error**
+hitmands.auth:logout.resolved        | event, result                                              | AuthService.logout **success**
+hitmands.auth:logout.rejected        | event, error                                               | AuthService.logout **error**
+hitmands.auth:fetch.resolved         | event, result                                              | AuthService.fetchLoggedUser **success**
+hitmands.auth:fetch.rejected         | event, error                                               | AuthService.fetchLoggedUser **error**
+$stateChangeError                    | event, toState, toParams, fromState, fromParams, error     | AuthService.authorize (when user try to access states without authorization)
+
 
 ```javascript
 angular
@@ -270,11 +271,11 @@ angular
 
         AuthServiceProvider
             .useRoutes({
-                login: '/api/v1/users/login.json',
-            });
+                login: '/api/v1/users/login.json'
+            })
             .useRoutes({
-                logout: '/api/v1/users/logout.json',
-            });
+                logout: '/api/v1/users/logout.json'
+            })
             .useRoutes({
                 fetch: '/api/v1/users/current.json'
             });
