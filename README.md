@@ -25,6 +25,7 @@ Table of Content:
   * [setCurrentUser](#module-service-setcurrentuser)
   * [unsetCurrentUser](#module-service-unsetcurrentuser)
   * [getCurrentUser](#module-service-getcurrentuser)
+  * [getAuthenticationToken](#module-service-getauthenticationtoken)
   * [isUserLoggedIn](#module-service-isuserloggedin)
   * [authorize](#module-service-authorize)
   * [fetchLoggedUser](#module-service-fetchloggeduser)
@@ -419,6 +420,19 @@ angular
     .run(function(AuthService) {
 
         AuthService.getCurrentUser();
+
+    });
+```
+
+##<a name="module-service-getauthenticationtoken"></a> AuthService.getAuthenticationToken
+Returns `{String}` if the user is logged in, `null {Null}` otherwise.
+
+```javascript
+angular
+    .module('myApp')
+    .run(function(AuthService) {
+
+        AuthService.getAuthenticationToken();
 
     });
 ```
