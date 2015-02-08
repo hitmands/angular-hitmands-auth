@@ -6,19 +6,11 @@ module.exports = function(grunt) {
    });
 
    var pkg = grunt.file.readJSON('package.json');
-   var fixtures = {
-      users: grunt.file.read('./sample/js/fixtures/users.json')
-   };
+
    var _banner = "/**!\n * @Project: <%= pkg.name %>\n * @Authors: <%= pkg.authors.join(', ') %>\n * @Link: <%= pkg.homepage %>\n * @License: MIT\n * @Date: <%= grunt.template.today('yyyy-mm-dd') %>\n * @Version: <%= pkg.version %>\n***/\n\n";
 
    grunt.config.init({
       pkg: pkg,
-
-      githooks: {
-         all: {
-            'pre-commit': 'release'
-         }
-      },
 
       jshint: {
          options: {
@@ -30,39 +22,6 @@ module.exports = function(grunt) {
                './release/**/*.js',
                '!./release/**/*.min.js'
             ]
-         }
-      },
-
-      symlink: {
-         options: {
-            overwrite: false
-         },
-         vendor: {},
-         views: {}
-      },
-
-      ngtemplates: {
-         options: {
-            bootstrap:  function(module, script) {
-               return '(function(window, angular) {' +
-                  '   angular.module("hitmands.auth.sample").run(function($templateCache) { ' + script + ' });\r\n' +
-                  '   window.usersFixtures = ' +
-                  fixtures.users +
-                  ';' +
-                  '})(window, angular);';
-            },
-            htmlmin: {
-               collapseWhitespace: true,
-               removeAttributeQuotes: true,
-               removeEmptyAttributes: true,
-               removeComments: true,
-               collapseBooleanAttributes: true
-            }
-         },
-         sample: {
-            cwd: './sample/',
-            src: ['views/**/*.html'],
-            dest: './sample/js/templates-and-fixtures.js'
          }
       },
 
@@ -181,16 +140,6 @@ module.exports = function(grunt) {
          }
       },
 
-      comments: {
-         release: {
-            options: {
-               singleline: true,
-               multiline: true
-            },
-            src: [ 'release/**/*.js']
-         }
-      },
-
       watch: {
          compile: {
             tasks: ['default'],
@@ -220,18 +169,6 @@ module.exports = function(grunt) {
          'newer:uglify:development',
          'newer:ngAnnotate',
          'newer:jshint:frontend'
-      ]
-   );
-
-   grunt.registerTask('sample',
-      [
-         'ngtemplates'
-      ]
-   );
-
-   grunt.registerTask('stripJavascriptComments',
-      [
-         'comments:release'
       ]
    );
 
