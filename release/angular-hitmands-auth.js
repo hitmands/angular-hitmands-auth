@@ -3,8 +3,8 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-02-08
- * @Version: 1.0.0
+ * @Date: 2015-02-25
+ * @Version: 1.1.0
 ***/
 
 (function(window, angular) {
@@ -317,19 +317,23 @@
    function AuthClassesDirectiveFactory(AuthService) {
       var classes = {
          "loggedIn": "user-is-logged-in",
-         "notLoggedIn": "user-not-logged-in"
+         "notLoggedIn": "user-not-logged-in",
+         "last": ""
       };
       return {
          "restrict": "A",
          "scope": !1,
          "link": function(iScope, iElement, iAttributes) {
             function _toggleClass() {
+               var newClasses = "";
                if (AuthService.isUserLoggedIn()) {
-                  iAttributes.$removeClass(classes.notLoggedIn);
-                  iAttributes.$addClass(classes.loggedIn);
+                  try {
+                     newClasses = " user-has-role-" + AuthService.getCurrentUser()[AuthCurrentUser.getAuthProperty()].join(" user-has-role-");
+                  } catch (e) {}
+                  iAttributes.$updateClass(classes.loggedIn + newClasses, classes.notLoggedIn);
+                  classes.last = newClasses;
                } else {
-                  iAttributes.$removeClass(classes.loggedIn);
-                  iAttributes.$addClass(classes.notLoggedIn);
+                  iAttributes.$updateClass(classes.notLoggedIn, classes.loggedIn + classes.last);
                }
             }
             _toggleClass();
