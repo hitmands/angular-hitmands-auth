@@ -1,8 +1,7 @@
 module.exports = function(grunt) {
    'use strict';
    require('jit-grunt')(grunt, {
-      "ngtemplates" : "grunt-angular-templates",
-      "comments" : "grunt-stripcomments"
+      "ngtemplates" : "grunt-angular-templates"
    });
 
    var pkg = grunt.file.readJSON('package.json');
