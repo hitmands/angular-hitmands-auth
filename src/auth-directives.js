@@ -5,24 +5,33 @@ function AuthLoginDirectiveFactory(AuthService) {
       restrict: 'A',
       link: function(iScope, iElement, iAttributes) {
          var credentials = iScope[ iAttributes['authLogin'] ];
+
+         var resolve = angular.isFunction(iScope.$eval( iAttributes['authLoginOnResolve'] )) ?
+            iScope.$eval( iAttributes['authLoginOnResolve'] ) : angular.noop;
+
+         var reject = angular.isFunction(iScope.$eval( iAttributes['authLoginOnReject'] )) ?
+            iScope.$eval( iAttributes['authLoginOnReject'] ) : angular.noop;
+
          var _form = null;
 
          try {
             _form = iScope[iElement.attr('name')];
          } catch (error) {}
 
+
          iElement.bind('submit', function( event ) {
 
             if( !angular.isObject(credentials) ) {
                event.preventDefault();
-               return;
+               return reject({ attrName: 'auth-login', attrValue: credentials });
             }
 
             if( angular.isObject(_form) && _form.hasOwnProperty('$invalid') && _form.$invalid ) {
                event.preventDefault();
-               return;
+               return reject({'form.$invalid' : _form.$invalid, '$form.$pristine' : _form.$pristine});
             }
-            AuthService.login(credentials);
+
+            return AuthService.login(credentials).then(resolve, reject);
          });
 
          iScope.$on('$destroy', function() {

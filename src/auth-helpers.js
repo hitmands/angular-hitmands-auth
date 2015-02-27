@@ -15,17 +15,17 @@ function _authorizeLevelBased( stateAuthLevel, userAuthLevel ) {
 
 /**
  *
- * @param {Array} stateAuthRoles
- * @param {Array} userAuthRoles
+ * @param {Array} haystack
+ * @param {Array} needle
  * @returns {Boolean}
  * @private
  */
-function _authorizeRoleBased( stateAuthRoles, userAuthRoles ) {
-   userAuthRoles = angular.isArray(userAuthRoles) ? userAuthRoles : [userAuthRoles];
+function _authorizeRoleBased( haystack, needle ) {
+   needle = angular.isArray(needle) ? needle : [needle];
 
-   for(var i = 0, len = stateAuthRoles.length; i < len; i++) {
-      for(var j = 0, jLen = userAuthRoles.length; j < jLen; j++) {
-         if( angular.equals(stateAuthRoles[i], userAuthRoles[j]) ) {
+   for(var i = 0, len = haystack.length; i < len; i++) {
+      for(var j = 0, jLen = needle.length; j < jLen; j++) {
+         if( angular.equals(haystack[i], needle[j]) ) {
             return true;
          }
       }

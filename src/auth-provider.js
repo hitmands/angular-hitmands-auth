@@ -10,24 +10,33 @@ function AuthProviderFactory( $httpProvider ) {
     * @preserve
     * @param {Object} [newRoutes = {login: String, logout: String, fetch: String}]
     */
-   this.useRoutes = function AuthServiceRoutesListSetter( newRoutes ) {
+   self.useRoutes = function AuthServiceRoutesListSetter( newRoutes ) {
       if( angular.isObject(newRoutes) ) {
          routes = angular.extend(routes, newRoutes);
       }
 
-      return this;
+      return self;
    };
 
 
    /**
     * Appends Authentication Token to all $httpRequests
+    * If a function is passed as second parameter is passed, it will be invoked for all $httpResponses with the config object
     *
     * @preserve
-    * @param {String} tokenKey - The Name of Key
+    * @param {String} [tokenKey = 'x-auth-token'] - The Name of the header Key, default x-auth-token
+    * @param {Function} [responseInterceptor] - if function passed, it will be invoked on every $httpResponses with the config object
     */
-   this.tokenizeHttp = function AuthServiceTokenizeHttp( tokenKey ) {
+   self.tokenizeHttp = function AuthServiceTokenizeHttp( tokenKey, responseInterceptor ) {
+      if(angular.isFunction(tokenKey)) {
+         responseInterceptor = tokenKey;
+      }
       if( !angular.isString(tokenKey) || tokenKey.length < 1 ) {
          tokenKey = 'x-auth-token';
+      }
+
+      if(!angular.isFunction(responseInterceptor)) {
+         responseInterceptor = void(0);
       }
 
       $httpProvider.interceptors.push(function AuthServiceInterceptor() {
@@ -44,21 +53,23 @@ function AuthProviderFactory( $httpProvider ) {
                }
 
                return config;
-            }
+            },
+            response: responseInterceptor,
+            responseError: responseInterceptor
          };
       });
 
-      return this;
+      return self;
    };
 
    /**
     * Encrypts login requests like headers['Authorization'] = 'Basic' + ' ' + btoa(credentials.username + ':' + credentials.password)
     * @preserve
     */
-   this.useBasicAuthentication = function AuthServiceUseHttpHeaderAuthorization() {
+   self.useBasicAuthentication = function AuthServiceUseHttpHeaderAuthorization() {
       isBasicAuthEnabled = true;
 
-      return this;
+      return self;
    };
 
    /**
@@ -67,7 +78,7 @@ function AuthProviderFactory( $httpProvider ) {
     * @param {Number|null} authLevel
     * @param {String|null} [authenticationToken=null]
     */
-   this.setLoggedUser = function AuthServiceLoggedUserSetter( userData, authenticationToken, authLevel ) {
+   self.setLoggedUser = function AuthServiceLoggedUserSetter( userData, authenticationToken, authLevel ) {
       if( angular.isArray(userData) || !angular.isObject( userData ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
 
          userData = null;
@@ -77,24 +88,24 @@ function AuthProviderFactory( $httpProvider ) {
       currentUser = (userData) ? new AuthCurrentUser(userData, authLevel) : null;
       authToken = authenticationToken;
 
-      return this;
+      return self;
    };
 
    /**
     * @preserve
     * @param {Requester~requestCallback} callback - The callback that handles the $http response.
     */
-   this.parseHttpAuthData = function AuthServiceExpectDataAs( callback ) {
+   self.parseHttpAuthData = function AuthServiceExpectDataAs( callback ) {
       if( angular.isFunction(callback) ) {
 
          _dataParser = callback;
       }
 
-      return this;
+      return self;
    };
 
 
-   this.$get = function($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
+   self.$get = function($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
       if(!angular.isFunction(_dataParser)) {
          $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'You need to set a Callback that handles the $http response');
       }
@@ -293,6 +304,17 @@ function AuthProviderFactory( $httpProvider ) {
 
             $exceptionHandler('AuthService.authorize', 'Cannot process authorization');
             return false;
+         },
+
+         /**
+          * @preserve
+          * @param needle {String|Array}
+          * @param haystack {Array}
+          *
+          * @returns {Boolean}
+          */
+         checkRoles: function(needle, haystack) {
+            return _authorizeRoleBased(haystack, needle);
          },
 
          /**

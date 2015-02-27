@@ -27,3 +27,4 @@ dump.rdb
 /bower_components/
 /src/vendor
 /sample
+/server.js

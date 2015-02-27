@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-02-25
+ * @Date: 2015-02-27
  * @Version: 1.1.0
 ***/
 
@@ -41,11 +41,11 @@
       return userAuthLevel >= stateAuthLevel;
    }
 
-   function _authorizeRoleBased(stateAuthRoles, userAuthRoles) {
-      userAuthRoles = angular.isArray(userAuthRoles) ? userAuthRoles : [ userAuthRoles ];
-      for (var i = 0, len = stateAuthRoles.length; len > i; i++) {
-         for (var j = 0, jLen = userAuthRoles.length; jLen > j; j++) {
-            if (angular.equals(stateAuthRoles[i], userAuthRoles[j])) {
+   function _authorizeRoleBased(haystack, needle) {
+      needle = angular.isArray(needle) ? needle : [ needle ];
+      for (var i = 0, len = haystack.length; len > i; i++) {
+         for (var j = 0, jLen = needle.length; jLen > j; j++) {
+            if (angular.equals(haystack[i], needle[j])) {
                return !0;
             }
          }
@@ -74,35 +74,41 @@
     * @preserve
     * @param {Object} [newRoutes = {login: String, logout: String, fetch: String}]
     */
-      this.useRoutes = function AuthServiceRoutesListSetter(newRoutes) {
+      self.useRoutes = function AuthServiceRoutesListSetter(newRoutes) {
          angular.isObject(newRoutes) && (routes = angular.extend(routes, newRoutes));
-         return this;
+         return self;
       };
       /**
     * Appends Authentication Token to all $httpRequests
+    * If a function is passed as second parameter is passed, it will be invoked for all $httpResponses with the config object
     *
     * @preserve
-    * @param {String} tokenKey - The Name of Key
+    * @param {String} [tokenKey = 'x-auth-token'] - The Name of the header Key, default x-auth-token
+    * @param {Function} [responseInterceptor] - if function passed, it will be invoked on every $httpResponses with the config object
     */
-      this.tokenizeHttp = function AuthServiceTokenizeHttp(tokenKey) {
+      self.tokenizeHttp = function AuthServiceTokenizeHttp(tokenKey, responseInterceptor) {
+         angular.isFunction(tokenKey) && (responseInterceptor = tokenKey);
          (!angular.isString(tokenKey) || tokenKey.length < 1) && (tokenKey = "x-auth-token");
+         angular.isFunction(responseInterceptor) || (responseInterceptor = void 0);
          $httpProvider.interceptors.push(function AuthServiceInterceptor() {
             return {
                "request": function AuthServiceRequestTransform(config) {
                   currentUser instanceof AuthCurrentUser && angular.isObject(config) && config.hasOwnProperty("headers") && (config.headers[tokenKey] = authToken);
                   return config;
-               }
+               },
+               "response": responseInterceptor,
+               "responseError": responseInterceptor
             };
          });
-         return this;
+         return self;
       };
       /**
     * Encrypts login requests like headers['Authorization'] = 'Basic' + ' ' + btoa(credentials.username + ':' + credentials.password)
     * @preserve
     */
-      this.useBasicAuthentication = function AuthServiceUseHttpHeaderAuthorization() {
+      self.useBasicAuthentication = function AuthServiceUseHttpHeaderAuthorization() {
          isBasicAuthEnabled = !0;
-         return this;
+         return self;
       };
       /**
     * @preserve
@@ -110,24 +116,24 @@
     * @param {Number|null} authLevel
     * @param {String|null} [authenticationToken=null]
     */
-      this.setLoggedUser = function AuthServiceLoggedUserSetter(userData, authenticationToken, authLevel) {
+      self.setLoggedUser = function AuthServiceLoggedUserSetter(userData, authenticationToken, authLevel) {
          if (angular.isArray(userData) || !angular.isObject(userData) || !angular.isString(authenticationToken) || authenticationToken.length < 1) {
             userData = null;
             authenticationToken = null;
          }
          currentUser = userData ? new AuthCurrentUser(userData, authLevel) : null;
          authToken = authenticationToken;
-         return this;
+         return self;
       };
       /**
     * @preserve
     * @param {Requester~requestCallback} callback - The callback that handles the $http response.
     */
-      this.parseHttpAuthData = function AuthServiceExpectDataAs(callback) {
+      self.parseHttpAuthData = function AuthServiceExpectDataAs(callback) {
          angular.isFunction(callback) && (_dataParser = callback);
-         return this;
+         return self;
       };
-      this.$get = ['$rootScope', '$http', '$state', '$exceptionHandler', '$timeout', '$q', function($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
+      self.$get = ['$rootScope', '$http', '$state', '$exceptionHandler', '$timeout', '$q', function($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
          function _setLoggedUser(newUserData, newAuthToken, newAuthLevel) {
             self.setLoggedUser(newUserData, newAuthToken, newAuthLevel);
             $rootScope.$broadcast(EVENTS.update);
@@ -270,6 +276,16 @@
             },
             /**
           * @preserve
+          * @param needle {String|Array}
+          * @param haystack {Array}
+          *
+          * @returns {Boolean}
+          */
+            "checkRoles": function(needle, haystack) {
+               return _authorizeRoleBased(haystack, needle);
+            },
+            /**
+          * @preserve
           * @returns {String|Null} - The Authentication Token
           */
             "getAuthenticationToken": function() {
@@ -285,12 +301,26 @@
       return {
          "restrict": "A",
          "link": function(iScope, iElement, iAttributes) {
-            var credentials = iScope[iAttributes.authLogin], _form = null;
+            var credentials = iScope[iAttributes.authLogin], resolve = angular.isFunction(iScope.$eval(iAttributes.authLoginOnResolve)) ? iScope.$eval(iAttributes.authLoginOnResolve) : angular.noop, reject = angular.isFunction(iScope.$eval(iAttributes.authLoginOnReject)) ? iScope.$eval(iAttributes.authLoginOnReject) : angular.noop, _form = null;
             try {
                _form = iScope[iElement.attr("name")];
             } catch (error) {}
             iElement.bind("submit", function(event) {
-               angular.isObject(credentials) ? angular.isObject(_form) && _form.hasOwnProperty("$invalid") && _form.$invalid ? event.preventDefault() : AuthService.login(credentials) : event.preventDefault();
+               if (!angular.isObject(credentials)) {
+                  event.preventDefault();
+                  return reject({
+                     "attrName": "auth-login",
+                     "attrValue": credentials
+                  });
+               }
+               if (angular.isObject(_form) && _form.hasOwnProperty("$invalid") && _form.$invalid) {
+                  event.preventDefault();
+                  return reject({
+                     "form.$invalid": _form.$invalid,
+                     "$form.$pristine": _form.$pristine
+                  });
+               }
+               return AuthService.login(credentials).then(resolve, reject);
             });
             iScope.$on("$destroy", function() {
                iElement.unbind("submit");

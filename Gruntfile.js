@@ -35,6 +35,38 @@ module.exports = function(grunt) {
                   dest: './release/angular-hitmands-auth.js'
                }
             ]
+         },
+         sample: {
+            files: [
+               {
+                  src: './sample/dist/application.js',
+                  dest: './sample/dist/application.js'
+               }
+            ]
+         }
+      },
+
+      ngtemplates: {
+         sample: {
+            options: {
+               module: 'hitmands.auth.sample.tpls',
+               htmlmin: {
+                  collapseBooleanAttributes:      true,
+                  collapseWhitespace:             true,
+                  removeAttributeQuotes:          true,
+                  removeComments:                 true,
+                  removeEmptyAttributes:          true,
+                  removeRedundantAttributes:      true,
+                  removeScriptTypeAttributes:     true,
+                  removeStyleLinkTypeAttributes:  true
+               },
+               url: function(url) {
+                  url = url.replace('./sample', '');
+                  return url;
+               }
+            },
+            src:      './sample/partials/**/*.html',
+            dest:     './sample/dist/application-tpls.js'
          }
       },
 
@@ -79,6 +111,18 @@ module.exports = function(grunt) {
                      './src/auth-directives.js'
                   ],
                   dest: './release/angular-hitmands-auth.js'
+               },
+               {
+                  src: [
+                     './sample/js/backend/backend.js',
+                     './sample/js/application.js',
+                     './sample/js/configs/**/*.js',
+                     './sample/js/services/**/*.js',
+                     './sample/js/auth/**/*.js',
+                     './sample/js/pages/**/*.js',
+                     '!./sample/dist/**/*.*'
+                  ],
+                  dest: './sample/dist/application.js'
                }
             ]
          },
@@ -105,6 +149,10 @@ module.exports = function(grunt) {
                {
                   src: './release/angular-hitmands-auth.js',
                   dest: './release/angular-hitmands-auth.min.js'
+               },
+               {
+                  src: './sample/dist/application.js',
+                  dest: './sample/dist/application.js'
                }
             ]
          }
@@ -130,6 +178,41 @@ module.exports = function(grunt) {
             src: './coverage/PhantomJS 1.9.8 (Mac OS X)/lcov.info',
             dest : './lcov.info',
             nonull: true
+         },
+         sample: {
+            src: [
+               'src/vendor/angular/angular.min.js',
+               'src/vendor/angular-ui-router/release/angular-ui-router.min.js',
+               'src/vendor/angular-bootstrap/ui-bootstrap.min.js',
+               'src/vendor/angular-bootstrap/ui-bootstrap-tpls.js',
+               'src/vendor/angular-mocks/angular-mocks.js',
+               'src/vendor/angular-sanitize/angular-sanitize.min.js',
+               'src/vendor/ngprogress-lite/ngprogress-lite.min.js'
+            ],
+            dest : 'sample/dist/application-lib.js',
+            nonull: true
+         }
+      },
+
+      inline: {
+         options:{
+            cssmin: true
+         },
+         sample: {
+            src: './sample/__index.html',
+            dest: './sample/dist/index.html'
+         }
+      },
+
+      htmlmin: {
+         sample: {
+            options : {
+               removeComments : true,
+               collapseWhitespace : true
+            },
+            files : {
+               './sample/dist/index.html' : './sample/dist/index.html'
+            }
          }
       },
 
@@ -144,17 +227,13 @@ module.exports = function(grunt) {
             tasks: ['default'],
             files: ['src/**/*.js']
          },
-         sample: {
-            tasks: ['default'],
-            files: ['src/**/*.js']
-         },
          frontend: {
             options: {
                livereload: true,
                spawn: false
             },
             files: [
-               'src/**/*.html',
+               'sample/**/*.*',
                'release/**/*.js'
             ]
          }
@@ -179,6 +258,14 @@ module.exports = function(grunt) {
          'concat:bannerize'
       ]
    );
+
+   grunt.registerTask('sample', [
+      'release',
+      'ngtemplates:sample',
+      'concat:sample',
+      'inline:sample',
+      'htmlmin:sample'
+   ]);
 
    grunt.registerTask('prepareCommit', [
       'release',
