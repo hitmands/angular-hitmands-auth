@@ -1,10 +1,12 @@
 # Angular Hitmands Auth
 [![Build Status](https://travis-ci.org/hitmands/angular-hitmands-auth.svg?branch=master)](https://travis-ci.org/hitmands/angular-hitmands-auth) [![Code Climate](https://codeclimate.com/github/hitmands/angular-hitmands-auth/badges/gpa.svg)](https://codeclimate.com/github/hitmands/angular-hitmands-auth) [![Test Coverage](https://codeclimate.com/github/hitmands/angular-hitmands-auth/badges/coverage.svg)](https://codeclimate.com/github/hitmands/angular-hitmands-auth)
 
-#### Simple implementation of Authentication System in [AngularJS](http://angularjs.org) based Applications.
+#### A full implementation of Authentication System in [AngularJS](http://angularjs.org) based Applications.
 ___
 
 **Note:** *This module requires [AngularJS ^1.3](http://angularjs.org) and [Angular UI-Router ^0.2](http://angular-ui.github.io/ui-router/).*
+
+DEMO: [http://hitmands.github.io/angular-hitmands-auth/](http://hitmands.github.io/angular-hitmands-auth/)
 
 Table of Content:
 * [Getting Started](#getting-started)
