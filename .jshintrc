@@ -8,7 +8,7 @@
    "multistr"      : false,
 
    "browser"       : true,
-   "node"          : false,
+   "node"          : true,
    "rhino"         : false,
    "couch"         : false,
 
