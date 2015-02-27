@@ -111,7 +111,58 @@ module.exports = function(grunt) {
                      './src/auth-directives.js'
                   ],
                   dest: './release/angular-hitmands-auth.js'
+               }
+            ]
+         },
+         sampleDev: {
+            options: {
+               mangle: false,
+               sourceMap: true,
+               compress: {
+                  sequences: false,
+                  unused: false
                },
+               beautify: {
+                  indent_level: 3,
+                  indent_start: 3,
+                  ascii_only: true,
+                  beautify: true,
+                  bracketize: true,
+                  semicolons: true,
+                  quote_keys: true,
+                  width: 80
+               },
+               banner: "(function(window, angular) {\n   'use strict';\n",
+               footer: '\n\n})(window, angular);',
+               preserveComments: function(node, comment) {
+                  var whiteList = /(jshint|@ngInject|@preserve)/g;
+                  var keepComment = false;
+
+                  if( whiteList.test(comment.value) ) {
+                     keepComment = true;
+                  }
+
+                  return keepComment;
+               }
+            },
+            files: [
+               {
+                  src: [
+                     './sample/js/backend/backend.js',
+                     './sample/js/application.js',
+                     './sample/js/configs/**/*.js',
+                     './sample/js/services/**/*.js',
+                     './sample/js/auth/**/*.js',
+                     './sample/js/pages/**/*.js',
+                     '!./sample/dist/**/*.*'
+                  ],
+                  dest: './sample/dist/application.js'
+               }
+            ]
+         },
+         sample: {
+
+            files: [
                {
                   src: [
                      './sample/js/backend/backend.js',
@@ -149,10 +200,6 @@ module.exports = function(grunt) {
                {
                   src: './release/angular-hitmands-auth.js',
                   dest: './release/angular-hitmands-auth.min.js'
-               },
-               {
-                  src: './sample/dist/application.js',
-                  dest: './sample/dist/application.js'
                }
             ]
          }
@@ -253,15 +300,17 @@ module.exports = function(grunt) {
    grunt.registerTask('release',
       [
          'uglify:development',
-         'ngAnnotate',
+         'ngAnnotate:modules',
          'uglify:production',
          'concat:bannerize'
       ]
    );
 
    grunt.registerTask('sample', [
-      'release',
+      'ngAnnotate:sample',
+      'uglify:sampleDev',
       'ngtemplates:sample',
+      'uglify:sample',
       'concat:sample',
       'inline:sample',
       'htmlmin:sample'
