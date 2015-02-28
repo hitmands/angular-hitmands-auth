@@ -28,16 +28,15 @@
     "sample"
   ],
   "dependencies": {
-    "angular": "~1.3.0",
-    "angular-ui-router": "^0.2.11"
+    "angular": "1.3.14",
+    "angular-ui-router": "0.2.13"
   },
   "devDependencies": {
     "bootstrap": "https://github.com/angular-ui/bootstrap.git#~0.12.1",
-    "angular-sanitize": "~1.3.1",
-    "angular-mocks": "~1.3.0",
-    "angular-hitmands-auth": "*",
+    "angular-sanitize": "~1.3.10",
+    "angular-mocks": "~1.3.10",
     "angular-bootstrap": "~0.12.1",
-    "ng-table": "~0.5.4",
-    "ngprogress-lite": "~1.0.7"
+    "ngprogress-lite": "1.0.7",
+    "angular-hitmands-auth": "master"
   }
 }
