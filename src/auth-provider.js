@@ -11,9 +11,7 @@ function AuthProviderFactory( $httpProvider ) {
     * @param {Object} [newRoutes = {login: String, logout: String, fetch: String}]
     */
    self.useRoutes = function AuthServiceRoutesListSetter( newRoutes ) {
-      if( angular.isObject(newRoutes) ) {
-         routes = angular.extend(routes, newRoutes);
-      }
+      routes = angular.extend(routes, newRoutes);
 
       return self;
    };
@@ -28,29 +26,20 @@ function AuthProviderFactory( $httpProvider ) {
     * @param {Function} [responseInterceptor] - if function passed, it will be invoked on every $httpResponses with the config object
     */
    self.tokenizeHttp = function AuthServiceTokenizeHttp( tokenKey, responseInterceptor ) {
-      if(angular.isFunction(tokenKey)) {
-         responseInterceptor = tokenKey;
-      }
-      if( !angular.isString(tokenKey) || tokenKey.length < 1 ) {
-         tokenKey = 'x-auth-token';
-      }
-
       $httpProvider.interceptors.push(function AuthServiceInterceptor() {
 
          return {
             request: function AuthServiceRequestTransform(config) {
 
-               if(
-                  (currentUser instanceof AuthCurrentUser) &&
-                  angular.isObject(config) &&
-                  config.hasOwnProperty('headers')
-               ) {
-                  config.headers[tokenKey] = authToken;
+               if(currentUser instanceof AuthCurrentUser) {
+                  try {
+                     config.headers[(tokenKey || 'x-auth-token')] = authToken;
+                  } catch(error) {}
                }
 
                return config;
             },
-            responseError: angular.isFunction(responseInterceptor) ? responseInterceptor : void(0)
+            responseError: responseInterceptor
          };
       });
 
@@ -270,7 +259,6 @@ function AuthProviderFactory( $httpProvider ) {
           */
          authorize: function( state, user ) {
             var userAuthLevel;
-            var propertyToCheck = AuthCurrentUser.getAuthProperty();
             user = user || currentUser;
 
             if( !angular.isObject(state) ) {
@@ -279,14 +267,14 @@ function AuthProviderFactory( $httpProvider ) {
             }
 
             try {
-               userAuthLevel = user[propertyToCheck] || 0;
+               userAuthLevel = user[AUTHPROPERTY] || 0;
             } catch(e) {
                userAuthLevel = 0;
             }
 
             var stateAuthLevel = (
-                  (angular.isObject(state.data) && state.data.hasOwnProperty(propertyToCheck)) ?
-                     state.data[propertyToCheck] : state[propertyToCheck]
+                  (angular.isObject(state.data) && state.data.hasOwnProperty(AUTHPROPERTY)) ?
+                     state.data[AUTHPROPERTY] : state[AUTHPROPERTY]
                ) || 0;
 
             if(angular.isNumber(stateAuthLevel)) {
@@ -308,7 +296,8 @@ function AuthProviderFactory( $httpProvider ) {
           *
           * @returns {Boolean}
           */
-         checkRoles: function(needle, haystack) {
+         check: function(needle, haystack) {
+
             return _authorizeRoleBased(haystack, needle);
          },
 

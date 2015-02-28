@@ -45,27 +45,6 @@ describe('Angular Module Hitmands-Auth:AuthService.useRoutes', function() {
    ));
 
 
-   it('AuthServiceProvider.useRoutes should NOT set routes', angular.mock.inject(
-         function(AuthService) {
-
-            AuthServiceProvider
-               .useRoutes('invalidParameterType')
-               .useRoutes(['invalidParameterType']);
-
-            $httpBackend.expectPOST('/users/login').respond(200, Mocks.user);
-            AuthService.login();
-            $httpBackend.flush();
-
-            $httpBackend.expectGET('/users/me').respond(200, Mocks.user);
-            AuthService.fetchLoggedUser();
-            $httpBackend.flush();
-
-            $httpBackend.expectPOST('/users/logout').respond([200, null]);
-            AuthService.logout();
-            $httpBackend.flush();
-         })
-   );
-
    it('AuthServiceProvider.useRoutes should set routes', angular.mock.inject(
          function(AuthService) {
 

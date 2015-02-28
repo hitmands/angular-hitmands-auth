@@ -86,7 +86,7 @@
     * @param {Object} [newRoutes = {login: String, logout: String, fetch: String}]
     */
       self.useRoutes = function AuthServiceRoutesListSetter(newRoutes) {
-         angular.isObject(newRoutes) && (routes = angular.extend(routes, newRoutes));
+         routes = angular.extend(routes, newRoutes);
          return self;
       };
       /**
@@ -98,15 +98,17 @@
     * @param {Function} [responseInterceptor] - if function passed, it will be invoked on every $httpResponses with the config object
     */
       self.tokenizeHttp = function AuthServiceTokenizeHttp(tokenKey, responseInterceptor) {
-         angular.isFunction(tokenKey) && (responseInterceptor = tokenKey);
-         (!angular.isString(tokenKey) || tokenKey.length < 1) && (tokenKey = "x-auth-token");
          $httpProvider.interceptors.push(function AuthServiceInterceptor() {
             return {
                "request": function AuthServiceRequestTransform(config) {
-                  currentUser instanceof AuthCurrentUser && angular.isObject(config) && config.hasOwnProperty("headers") && (config.headers[tokenKey] = authToken);
+                  if (currentUser instanceof AuthCurrentUser) {
+                     try {
+                        config.headers[tokenKey || "x-auth-token"] = authToken;
+                     } catch (error) {}
+                  }
                   return config;
                },
-               "responseError": angular.isFunction(responseInterceptor) ? responseInterceptor : void 0
+               "responseError": responseInterceptor
             };
          });
          return self;
@@ -262,18 +264,18 @@
           * @returns {Boolean}
           */
             "authorize": function(state, user) {
-               var userAuthLevel, propertyToCheck = AuthCurrentUser.getAuthProperty();
+               var userAuthLevel;
                user = user || currentUser;
                if (!angular.isObject(state)) {
                   $exceptionHandler("AuthService.authorize", "first param must be Object");
                   return !1;
                }
                try {
-                  userAuthLevel = user[propertyToCheck] || 0;
+                  userAuthLevel = user[AUTHPROPERTY] || 0;
                } catch (e) {
                   userAuthLevel = 0;
                }
-               var stateAuthLevel = (angular.isObject(state.data) && state.data.hasOwnProperty(propertyToCheck) ? state.data[propertyToCheck] : state[propertyToCheck]) || 0;
+               var stateAuthLevel = (angular.isObject(state.data) && state.data.hasOwnProperty(AUTHPROPERTY) ? state.data[AUTHPROPERTY] : state[AUTHPROPERTY]) || 0;
                if (angular.isNumber(stateAuthLevel)) {
                   return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
                }
@@ -290,7 +292,7 @@
           *
           * @returns {Boolean}
           */
-            "checkRoles": function(needle, haystack) {
+            "check": function(needle, haystack) {
                return _authorizeRoleBased(haystack, needle);
             },
             /**
@@ -367,7 +369,7 @@
                var newClasses = "";
                if (AuthService.isUserLoggedIn()) {
                   try {
-                     newClasses = " user-has-role-" + AuthService.getCurrentUser()[AuthCurrentUser.getAuthProperty()].join(" user-has-role-");
+                     newClasses = " user-has-role-" + AuthService.getCurrentUser()[AUTHPROPERTY].join(" user-has-role-");
                   } catch (e) {}
                   iAttributes.$updateClass(classes.loggedIn + newClasses, classes.notLoggedIn);
                   classes.last = newClasses;
@@ -384,7 +386,7 @@
    }
    AuthClassesDirectiveFactory.$inject = ['AuthService'];
 
-   var currentUser = null, authToken = null, routes = {
+   var currentUser = null, authToken = null, AUTHPROPERTY = "authLevel", routes = {
       "login": "/users/login",
       "logout": "/users/logout",
       "fetch": "/users/me"
@@ -415,9 +417,6 @@
          });
       }
       var authProperty = "authLevel";
-      AuthCurrentUser.getAuthProperty = function() {
-         return authProperty;
-      };
       return AuthCurrentUser;
    }.call(this);
 

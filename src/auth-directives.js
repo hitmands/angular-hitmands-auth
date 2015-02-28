@@ -75,7 +75,7 @@ function AuthClassesDirectiveFactory(AuthService) {
 
             if( AuthService.isUserLoggedIn() ) {
                try {
-                  newClasses = ' user-has-role-' + AuthService.getCurrentUser()[AuthCurrentUser.getAuthProperty()].join(' user-has-role-');
+                  newClasses = ' user-has-role-' + AuthService.getCurrentUser()[AUTHPROPERTY].join(' user-has-role-');
                } catch(e) { }
 
                iAttributes.$updateClass(classes.loggedIn + newClasses, classes.notLoggedIn);

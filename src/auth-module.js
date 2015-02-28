@@ -5,6 +5,7 @@
  **/
 var currentUser = null;
 var authToken = null;
+var AUTHPROPERTY = 'authLevel';
 var routes = {
    "login": '/users/login',
    "logout": '/users/logout',
@@ -43,10 +44,6 @@ var AuthCurrentUser = (function() {
          value: authLevel || userData[authProperty] || 0
       });
    }
-
-   AuthCurrentUser.getAuthProperty = function() {
-      return authProperty;
-   };
 
    return AuthCurrentUser;
 }).call(this);
