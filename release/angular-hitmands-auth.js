@@ -60,22 +60,6 @@
       return !1;
    }
 
-   function _sanitizeParsedData(parsedData, $exceptionHandler) {
-      var valid = !1;
-      try {
-         valid = _validAuthData(parsedData.user, parsedData.token);
-      } catch (error) {}
-      if (!valid) {
-         $exceptionHandler("AuthServiceProvider.parseHttpAuthData", "Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number|Array}");
-         parsedData = {
-            "user": null,
-            "token": null,
-            "authLevel": 0
-         };
-      }
-      return parsedData;
-   }
-
    /* @ngInject */
    function AuthProviderFactory($httpProvider) {
       var _dataParser, self = this, isBasicAuthEnabled = !1;
@@ -173,7 +157,7 @@
                   delete credentials.password;
                }
                return $http.post(routes.login, credentials, configs).then(function(result) {
-                  var data = _sanitizeParsedData(_dataParser(result.data, result.headers(), result.status), $exceptionHandler);
+                  var data = _dataParser(result.data, result.headers(), result.status);
                   _setLoggedUser(data.user, data.token, data.authLevel);
                   $rootScope.$broadcast(EVENTS.login.success, result);
                   return result;
@@ -193,7 +177,7 @@
                return $http.get(routes.fetch, {
                   "cache": !1
                }).then(function(result) {
-                  var data = _sanitizeParsedData(_dataParser(result.data, result.headers(), result.status), $exceptionHandler);
+                  var data = _dataParser(result.data, result.headers(), result.status);
                   _setLoggedUser(data.user, data.token, data.authLevel);
                   $rootScope.$broadcast(EVENTS.fetch.success, result);
                   return result;
@@ -264,18 +248,16 @@
           * @returns {Boolean}
           */
             "authorize": function(state, user) {
-               var userAuthLevel;
+               var userAuthLevel = 0;
                user = user || currentUser;
                if (!angular.isObject(state)) {
                   $exceptionHandler("AuthService.authorize", "first param must be Object");
                   return !1;
                }
                try {
-                  userAuthLevel = user[AUTHPROPERTY] || 0;
-               } catch (e) {
-                  userAuthLevel = 0;
-               }
-               var stateAuthLevel = (angular.isObject(state.data) && state.data.hasOwnProperty(AUTHPROPERTY) ? state.data[AUTHPROPERTY] : state[AUTHPROPERTY]) || 0;
+                  userAuthLevel = user[AUTHPROPERTY];
+               } catch (e) {}
+               var stateAuthLevel = (state.data ? state.data[AUTHPROPERTY] : state[AUTHPROPERTY]) || 0;
                if (angular.isNumber(stateAuthLevel)) {
                   return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
                }

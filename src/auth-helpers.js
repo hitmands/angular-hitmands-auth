@@ -1,3 +1,10 @@
+/**
+ *
+ * @param userData
+ * @param token
+ * @returns {Boolean}
+ * @private
+ */
 function _validAuthData(userData, token) {
    var res = true;
 
@@ -9,8 +16,6 @@ function _validAuthData(userData, token) {
    if(!angular.isString(token) || token.length < 1) {
       res = false;
    }
-
-
 
    return res;
 }
@@ -51,26 +56,4 @@ function _authorizeRoleBased( haystack, needle ) {
    return false;
 }
 
-/**
- * @param parsedData
- * @param {Object|Function} $exceptionHandler - AngularJS Wrapper for javascript exception!
- * @returns {{user: Object|null, token: string|null}}
- * @private
- */
-function _sanitizeParsedData( parsedData, $exceptionHandler ) {
-   var valid = false;
-   try {
-      valid = _validAuthData(parsedData.user, parsedData.token);
-   } catch(error) {}
-   if( !valid ) {
-      $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number|Array}');
-
-      parsedData = {
-         user: null,
-         token: null,
-         authLevel: 0
-      };
-   }
-   return parsedData;
-}
 

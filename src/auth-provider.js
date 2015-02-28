@@ -138,7 +138,7 @@ function AuthProviderFactory( $httpProvider ) {
                .post(routes.login, credentials, configs)
                .then(
                function( result ) {
-                  var data = _sanitizeParsedData( _dataParser(result.data, result.headers(), result.status), $exceptionHandler );
+                  var data = _dataParser(result.data, result.headers(), result.status);
 
                   _setLoggedUser( data.user, data.token, data.authLevel );
                   $rootScope.$broadcast(EVENTS.login.success, result);
@@ -166,7 +166,7 @@ function AuthProviderFactory( $httpProvider ) {
                .get(routes.fetch, { cache: false })
                .then(
                function( result ) {
-                  var data = _sanitizeParsedData( _dataParser(result.data, result.headers(), result.status), $exceptionHandler );
+                  var data = _dataParser(result.data, result.headers(), result.status);
 
                   _setLoggedUser( data.user, data.token, data.authLevel );
                   $rootScope.$broadcast(EVENTS.fetch.success, result);
@@ -258,7 +258,7 @@ function AuthProviderFactory( $httpProvider ) {
           * @returns {Boolean}
           */
          authorize: function( state, user ) {
-            var userAuthLevel;
+            var userAuthLevel = 0;
             user = user || currentUser;
 
             if( !angular.isObject(state) ) {
@@ -267,15 +267,10 @@ function AuthProviderFactory( $httpProvider ) {
             }
 
             try {
-               userAuthLevel = user[AUTHPROPERTY] || 0;
-            } catch(e) {
-               userAuthLevel = 0;
-            }
+               userAuthLevel = user[AUTHPROPERTY];
+            } catch(e) {}
 
-            var stateAuthLevel = (
-                  (angular.isObject(state.data) && state.data.hasOwnProperty(AUTHPROPERTY)) ?
-                     state.data[AUTHPROPERTY] : state[AUTHPROPERTY]
-               ) || 0;
+            var stateAuthLevel = (state.data ? state.data[AUTHPROPERTY] : state[AUTHPROPERTY]) || 0;
 
             if(angular.isNumber(stateAuthLevel)) {
                return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
