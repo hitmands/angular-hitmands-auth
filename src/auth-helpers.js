@@ -1,3 +1,20 @@
+function _validAuthData(userData, token) {
+   var res = true;
+
+
+   if(angular.isArray(userData) || !angular.isObject( userData )) {
+      res = false;
+   }
+
+   if(!angular.isString(token) || token.length < 1) {
+      res = false;
+   }
+
+
+
+   return res;
+}
+
 /**
  *
  * @param {Number} stateAuthLevel
@@ -36,12 +53,16 @@ function _authorizeRoleBased( haystack, needle ) {
 
 /**
  * @param parsedData
- * @param {Object} $exceptionHandler - AngularJS Wrapper for javascript exception!
+ * @param {Object|Function} $exceptionHandler - AngularJS Wrapper for javascript exception!
  * @returns {{user: Object|null, token: string|null}}
  * @private
  */
 function _sanitizeParsedData( parsedData, $exceptionHandler ) {
-   if( !angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1 ) {
+   var valid = false;
+   try {
+      valid = _validAuthData(parsedData.user, parsedData.token);
+   } catch(error) {}
+   if( !valid ) {
       $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number|Array}');
 
       parsedData = {
@@ -52,3 +73,4 @@ function _sanitizeParsedData( parsedData, $exceptionHandler ) {
    }
    return parsedData;
 }
+

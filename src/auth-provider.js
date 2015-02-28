@@ -35,10 +35,6 @@ function AuthProviderFactory( $httpProvider ) {
          tokenKey = 'x-auth-token';
       }
 
-      if(!angular.isFunction(responseInterceptor)) {
-         responseInterceptor = void(0);
-      }
-
       $httpProvider.interceptors.push(function AuthServiceInterceptor() {
 
          return {
@@ -54,8 +50,7 @@ function AuthProviderFactory( $httpProvider ) {
 
                return config;
             },
-            response: responseInterceptor,
-            responseError: responseInterceptor
+            responseError: angular.isFunction(responseInterceptor) ? responseInterceptor : void(0)
          };
       });
 
@@ -79,7 +74,7 @@ function AuthProviderFactory( $httpProvider ) {
     * @param {String|null} [authenticationToken=null]
     */
    self.setLoggedUser = function AuthServiceLoggedUserSetter( userData, authenticationToken, authLevel ) {
-      if( angular.isArray(userData) || !angular.isObject( userData ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
+      if( !_validAuthData(userData, authenticationToken) ) {
 
          userData = null;
          authenticationToken = null;
@@ -111,9 +106,9 @@ function AuthProviderFactory( $httpProvider ) {
       }
 
       /**
-       * @param {Object|null} newUserData
-       * @param {String|null} newAuthToken
-       * @param {Number|null} newAuthLevel
+       * @param {Object|null} [newUserData]
+       * @param {String|null} [newAuthToken]
+       * @param {Number|null} [newAuthLevel]
        * @private
        */
       function _setLoggedUser( newUserData, newAuthToken, newAuthLevel ) {
@@ -162,7 +157,7 @@ function AuthProviderFactory( $httpProvider ) {
                   return result;
                },
                function( error ) {
-                  _setLoggedUser( null, null, null );
+                  _setLoggedUser(  );
                   $rootScope.$broadcast(EVENTS.login.error, error);
 
                   return $q.reject(error);
@@ -190,7 +185,7 @@ function AuthProviderFactory( $httpProvider ) {
                   return result;
                },
                function( error ) {
-                  _setLoggedUser( null, null, null );
+                  _setLoggedUser(  );
                   $rootScope.$broadcast(EVENTS.fetch.error, error);
 
                   return $q.reject(error);
@@ -210,13 +205,13 @@ function AuthProviderFactory( $httpProvider ) {
                .post(routes.logout, null, { cache: false })
                .then(
                function( result ) {
-                  _setLoggedUser( null, null, null );
+                  _setLoggedUser(  );
                   $rootScope.$broadcast(EVENTS.logout.success, result);
 
                   return result;
                },
                function( error ) {
-                  _setLoggedUser( null, null, null );
+                  _setLoggedUser(  );
                   $rootScope.$broadcast(EVENTS.logout.error, error);
 
                   return $q.reject(error);
@@ -231,7 +226,7 @@ function AuthProviderFactory( $httpProvider ) {
           * @param {String} authenticationToken
           */
          setCurrentUser: function(user, authLevel, authenticationToken) {
-            if( angular.isArray(user) || !angular.isObject( user ) || !angular.isString(authenticationToken) || authenticationToken.length < 1 ) {
+            if( !_validAuthData(user, authenticationToken) ) {
                return false;
             }
 
@@ -244,7 +239,7 @@ function AuthProviderFactory( $httpProvider ) {
           */
          unsetCurrentUser: function() {
 
-            _setLoggedUser( null, null, null );
+            _setLoggedUser(  );
             return true;
          },
 

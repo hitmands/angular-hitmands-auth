@@ -36,6 +36,13 @@
    }
    AuthModuleRun.$inject = ['$rootScope', 'AuthService', '$state', '$location', '$timeout'];
 
+   function _validAuthData(userData, token) {
+      var res = !0;
+      (angular.isArray(userData) || !angular.isObject(userData)) && (res = !1);
+      (!angular.isString(token) || token.length < 1) && (res = !1);
+      return res;
+   }
+
    function _authorizeLevelBased(stateAuthLevel, userAuthLevel) {
       angular.isNumber(userAuthLevel) || (userAuthLevel = 0);
       return userAuthLevel >= stateAuthLevel;
@@ -54,7 +61,11 @@
    }
 
    function _sanitizeParsedData(parsedData, $exceptionHandler) {
-      if (!angular.isObject(parsedData) || !angular.isObject(parsedData.user) || !angular.isString(parsedData.token) || parsedData.token.length < 1) {
+      var valid = !1;
+      try {
+         valid = _validAuthData(parsedData.user, parsedData.token);
+      } catch (error) {}
+      if (!valid) {
          $exceptionHandler("AuthServiceProvider.parseHttpAuthData", "Invalid callback passed. The Callback must return an object like {user: Object, token: String, authLevel: Number|Array}");
          parsedData = {
             "user": null,
@@ -89,15 +100,13 @@
       self.tokenizeHttp = function AuthServiceTokenizeHttp(tokenKey, responseInterceptor) {
          angular.isFunction(tokenKey) && (responseInterceptor = tokenKey);
          (!angular.isString(tokenKey) || tokenKey.length < 1) && (tokenKey = "x-auth-token");
-         angular.isFunction(responseInterceptor) || (responseInterceptor = void 0);
          $httpProvider.interceptors.push(function AuthServiceInterceptor() {
             return {
                "request": function AuthServiceRequestTransform(config) {
                   currentUser instanceof AuthCurrentUser && angular.isObject(config) && config.hasOwnProperty("headers") && (config.headers[tokenKey] = authToken);
                   return config;
                },
-               "response": responseInterceptor,
-               "responseError": responseInterceptor
+               "responseError": angular.isFunction(responseInterceptor) ? responseInterceptor : void 0
             };
          });
          return self;
@@ -117,7 +126,7 @@
     * @param {String|null} [authenticationToken=null]
     */
       self.setLoggedUser = function AuthServiceLoggedUserSetter(userData, authenticationToken, authLevel) {
-         if (angular.isArray(userData) || !angular.isObject(userData) || !angular.isString(authenticationToken) || authenticationToken.length < 1) {
+         if (!_validAuthData(userData, authenticationToken)) {
             userData = null;
             authenticationToken = null;
          }
@@ -167,7 +176,7 @@
                   $rootScope.$broadcast(EVENTS.login.success, result);
                   return result;
                }, function(error) {
-                  _setLoggedUser(null, null, null);
+                  _setLoggedUser();
                   $rootScope.$broadcast(EVENTS.login.error, error);
                   return $q.reject(error);
                });
@@ -187,7 +196,7 @@
                   $rootScope.$broadcast(EVENTS.fetch.success, result);
                   return result;
                }, function(error) {
-                  _setLoggedUser(null, null, null);
+                  _setLoggedUser();
                   $rootScope.$broadcast(EVENTS.fetch.error, error);
                   return $q.reject(error);
                });
@@ -202,11 +211,11 @@
                return $http.post(routes.logout, null, {
                   "cache": !1
                }).then(function(result) {
-                  _setLoggedUser(null, null, null);
+                  _setLoggedUser();
                   $rootScope.$broadcast(EVENTS.logout.success, result);
                   return result;
                }, function(error) {
-                  _setLoggedUser(null, null, null);
+                  _setLoggedUser();
                   $rootScope.$broadcast(EVENTS.logout.error, error);
                   return $q.reject(error);
                });
@@ -218,7 +227,7 @@
           * @param {String} authenticationToken
           */
             "setCurrentUser": function(user, authLevel, authenticationToken) {
-               if (angular.isArray(user) || !angular.isObject(user) || !angular.isString(authenticationToken) || authenticationToken.length < 1) {
+               if (!_validAuthData(user, authenticationToken)) {
                   return !1;
                }
                _setLoggedUser(user, authenticationToken, authLevel);
@@ -228,7 +237,7 @@
           * @preserve
           */
             "unsetCurrentUser": function() {
-               _setLoggedUser(null, null, null);
+               _setLoggedUser();
                return !0;
             },
             /**
