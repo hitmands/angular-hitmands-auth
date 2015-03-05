@@ -118,9 +118,9 @@ describe('hitmands.auth.AuthService.login', function() {
                   expect(url).toEqual(loginRoute);
                   expect(data).toEqual({});
                   expect('Authorization' in headers).toBeTruthy();
-                  var method = headers.Authorization.split(' ');
-                  var credentials = method.pop();
-                  expect(method.shift()).toEqual('Basic');
+                  var _method = headers.Authorization.split(' ');
+                  var credentials = _method.pop();
+                  expect(_method.shift()).toEqual('Basic');
                   expect(credentials).toEqual(btoa('test' + ':' + 'testpwd'));
 
 
