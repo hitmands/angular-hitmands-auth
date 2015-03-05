@@ -18,7 +18,7 @@ module.exports = function(config) {
          'src/vendor/angular/angular.js',
          'src/vendor/angular-mocks/angular-mocks.js',
          'src/vendor/angular-ui-router/release/angular-ui-router.js',
-         'tests/**/*.js',
+         'specs/**/*.js',
          'release/angular-hitmands-auth.js'
       ],
 

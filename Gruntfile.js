@@ -6,7 +6,20 @@ module.exports = function(grunt) {
 
    var pkg = grunt.file.readJSON('package.json');
 
-   var _banner = "/**!\n * @Project: <%= pkg.name %>\n * @Authors: <%= pkg.authors.join(', ') %>\n * @Link: <%= pkg.homepage %>\n * @License: MIT\n * @Date: <%= grunt.template.today('yyyy-mm-dd') %>\n * @Version: <%= pkg.version %>\n***/\n\n";
+   var _banner = "/**!\n" +
+      " * @Project: <%= pkg.name %>\n" +
+      " * @Authors: <%= pkg.authors.join(', ') %>\n" +
+      " * @Link: <%= pkg.homepage %>\n" +
+      " * @License: MIT\n" +
+      " * @Date: <%= grunt.template.today('yyyy-mm-dd') %>\n" +
+      " * @Version: <%= pkg.version %>\n" +
+      " * \n" +
+      " * @ngdoc: module\n" +
+      " * @namespace: hitmands\n" +
+      " * @name: auth\n" +
+      " * @module: hitmands.auth\n" +
+      " * @description: Full Implementation of an authentication management system.\n" +
+      "***/\n\n";
 
    grunt.config.init({
       pkg: pkg,
@@ -114,6 +127,32 @@ module.exports = function(grunt) {
                }
             ]
          },
+         production: {
+            options: {
+               mangle: {
+                  except: ['AuthCurrentUser']
+               },
+               compress: {
+                  drop_console: true,
+                  join_vars: true,
+                  unused: true
+               },
+               beautify: {
+                  ascii_only: true,
+                  beautify: false
+               },
+               sourceMap: false,
+               preserveComments: false,
+               report: 'gzip',
+               footer: '\n'
+            },
+            files: [
+               {
+                  src: './release/angular-hitmands-auth.js',
+                  dest: './release/angular-hitmands-auth.min.js'
+               }
+            ]
+         },
          sampleDev: {
             options: {
                mangle: false,
@@ -148,9 +187,9 @@ module.exports = function(grunt) {
             files: [
                {
                   src: [
-                     './sample/js/backend/backend.js',
                      './sample/js/application.js',
                      './sample/js/configs/**/*.js',
+                     './sample/js/backend/backend.js',
                      './sample/js/services/**/*.js',
                      './sample/js/auth/**/*.js',
                      './sample/js/pages/**/*.js',
@@ -161,23 +200,6 @@ module.exports = function(grunt) {
             ]
          },
          sample: {
-
-            files: [
-               {
-                  src: [
-                     './sample/js/backend/backend.js',
-                     './sample/js/application.js',
-                     './sample/js/configs/**/*.js',
-                     './sample/js/services/**/*.js',
-                     './sample/js/auth/**/*.js',
-                     './sample/js/pages/**/*.js',
-                     '!./sample/dist/**/*.*'
-                  ],
-                  dest: './sample/dist/application.js'
-               }
-            ]
-         },
-         production: {
             options: {
                mangle: {
                   except: ['AuthCurrentUser']
@@ -198,8 +220,8 @@ module.exports = function(grunt) {
             },
             files: [
                {
-                  src: './release/angular-hitmands-auth.js',
-                  dest: './release/angular-hitmands-auth.min.js'
+                  src: './sample/dist/application.js',
+                  dest: './sample/dist/application.js'
                }
             ]
          }
@@ -307,13 +329,13 @@ module.exports = function(grunt) {
    );
 
    grunt.registerTask('sample', [
-      'ngAnnotate:sample',
       'uglify:sampleDev',
-      'ngtemplates:sample',
+      'ngAnnotate:sample',
       'uglify:sample',
-      'concat:sample',
-      'inline:sample',
-      'htmlmin:sample'
+      //'ngtemplates:sample',
+      //'concat:sample',
+      //'inline:sample',
+      //'htmlmin:sample'
    ]);
 
    grunt.registerTask('prepareCommit', [

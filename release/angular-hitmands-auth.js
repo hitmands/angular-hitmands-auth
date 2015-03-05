@@ -3,8 +3,14 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-02-28
+ * @Date: 2015-03-05
  * @Version: 1.1.0
+ * 
+ * @ngdoc: module
+ * @namespace: hitmands
+ * @name: auth
+ * @module: hitmands.auth
+ * @description: Full Implementation of an authentication management system.
 ***/
 
 (function(window, angular) {
@@ -48,8 +54,11 @@
       return userAuthLevel >= stateAuthLevel;
    }
 
-   function _authorizeRoleBased(haystack, needle) {
+   function _inArray(haystack, needle) {
       needle = angular.isArray(needle) ? needle : [ needle ];
+      if (haystack.length < 1) {
+         return !0;
+      }
       for (var i = 0, len = haystack.length; len > i; i++) {
          for (var j = 0, jLen = needle.length; jLen > j; j++) {
             if (angular.equals(haystack[i], needle[j])) {
@@ -61,8 +70,18 @@
    }
 
    /* @ngInject */
-   function AuthProviderFactory($httpProvider) {
+   function AuthServiceProviderFactory($httpProvider) {
       var _dataParser, self = this, isBasicAuthEnabled = !1;
+      /**
+    * Changes the name of the authProperty to check in ui.router $state Object
+    *
+    * @preserve
+    * @param {String} [newAuthPropertyName = 'authLevel']
+    */
+      self.setAuthLevelPropertyName = function AuthServiceSetAuthLevelPropertyName(newAuthPropertyName) {
+         angular.isString(newAuthPropertyName) && (AUTHPROPERTY = newAuthPropertyName);
+         return self;
+      };
       /**
     * Extends Used Routes
     *
@@ -82,6 +101,10 @@
     * @param {Function} [responseInterceptor] - if function passed, it will be invoked on every $httpResponses with the config object
     */
       self.tokenizeHttp = function AuthServiceTokenizeHttp(tokenKey, responseInterceptor) {
+         if (angular.isFunction(tokenKey)) {
+            responseInterceptor = tokenKey;
+            tokenKey = void 0;
+         }
          $httpProvider.interceptors.push(function AuthServiceInterceptor() {
             return {
                "request": function AuthServiceRequestTransform(config) {
@@ -128,7 +151,7 @@
          angular.isFunction(callback) && (_dataParser = callback);
          return self;
       };
-      self.$get = ['$rootScope', '$http', '$state', '$exceptionHandler', '$timeout', '$q', function($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
+      self.$get = ['$rootScope', '$http', '$state', '$exceptionHandler', '$timeout', '$q', function AuthServiceFactory($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
          function _setLoggedUser(newUserData, newAuthToken, newAuthLevel) {
             self.setLoggedUser(newUserData, newAuthToken, newAuthLevel);
             $rootScope.$broadcast(EVENTS.update);
@@ -173,7 +196,7 @@
           * @preserve
           * @returns {ng.IPromise}
           */
-            "fetchLoggedUser": function() {
+            "fetch": function() {
                return $http.get(routes.fetch, {
                   "cache": !1
                }).then(function(result) {
@@ -209,7 +232,7 @@
             /**
           * @preserve
           * @param {Object} user
-          * @param {Number} authLevel
+          * @param {Number|Array} authLevel
           * @param {String} authenticationToken
           */
             "setCurrentUser": function(user, authLevel, authenticationToken) {
@@ -262,7 +285,7 @@
                   return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
                }
                if (angular.isArray(stateAuthLevel)) {
-                  return _authorizeRoleBased(stateAuthLevel, userAuthLevel);
+                  return _inArray(stateAuthLevel, userAuthLevel);
                }
                $exceptionHandler("AuthService.authorize", "Cannot process authorization");
                return !1;
@@ -275,7 +298,7 @@
           * @returns {Boolean}
           */
             "check": function(needle, haystack) {
-               return _authorizeRoleBased(haystack, needle);
+               return _inArray(haystack, needle);
             },
             /**
           * @preserve
@@ -287,14 +310,16 @@
          };
       }];
    }
-   AuthProviderFactory.$inject = ['$httpProvider'];
+   AuthServiceProviderFactory.$inject = ['$httpProvider'];
 
    /* @ngInject */
    function AuthLoginDirectiveFactory(AuthService) {
       return {
          "restrict": "A",
          "link": function(iScope, iElement, iAttributes) {
-            var credentials = iScope[iAttributes.authLogin], resolve = angular.isFunction(iScope.$eval(iAttributes.authLoginOnResolve)) ? iScope.$eval(iAttributes.authLoginOnResolve) : angular.noop, reject = angular.isFunction(iScope.$eval(iAttributes.authLoginOnReject)) ? iScope.$eval(iAttributes.authLoginOnReject) : angular.noop, _form = null;
+            var _form = null, credentials = iScope[iAttributes.authLogin], resolve = iScope.$eval(iAttributes.authLoginOnResolve), reject = iScope.$eval(iAttributes.authLoginOnReject);
+            resolve = angular.isFunction(resolve) ? resolve : angular.noop;
+            reject = angular.isFunction(reject) ? reject : angular.noop;
             try {
                _form = iScope[iElement.attr("name")];
             } catch (error) {}
@@ -306,12 +331,9 @@
                      "attrValue": credentials
                   });
                }
-               if (angular.isObject(_form) && _form.hasOwnProperty("$invalid") && _form.$invalid) {
+               if (angular.isObject(_form) && _form.$invalid) {
                   event.preventDefault();
-                  return reject({
-                     "form.$invalid": _form.$invalid,
-                     "$form.$pristine": _form.$pristine
-                  });
+                  return reject(_form.$error);
                }
                return AuthService.login(credentials).then(resolve, reject);
             });
@@ -390,19 +412,18 @@
       function AuthCurrentUser(userData, authLevel) {
          /* jshint ignore:start */
          for (var k in userData) {
-            userData.hasOwnProperty(k) && k !== authProperty && (this[k] = userData[k]);
+            userData.hasOwnProperty(k) && k !== AUTHPROPERTY && (this[k] = userData[k]);
          }
          /* jshint ignore:end */
-         Object.defineProperty(this, authProperty, {
+         Object.defineProperty(this, AUTHPROPERTY, {
             "enumerable": !0,
-            "value": authLevel || userData[authProperty] || 0
+            "value": authLevel || 0
          });
       }
-      var authProperty = "authLevel";
       return AuthCurrentUser;
    }.call(this);
 
-   angular.module("hitmands.auth", [ "ui.router" ]).provider("AuthService", AuthProviderFactory).directive("authLogin", AuthLoginDirectiveFactory).directive("authLogout", AuthLogoutDirectiveFactory).directive("authClasses", AuthClassesDirectiveFactory).run(AuthModuleRun);
+   angular.module("hitmands.auth", [ "ui.router" ]).provider("AuthService", AuthServiceProviderFactory).directive("authLogin", AuthLoginDirectiveFactory).directive("authLogout", AuthLogoutDirectiveFactory).directive("authClasses", AuthClassesDirectiveFactory).run(AuthModuleRun);
 //# sourceMappingURL=angular-hitmands-auth.js.map
 
 })(window, angular);

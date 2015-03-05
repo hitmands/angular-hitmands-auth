@@ -28,20 +28,19 @@ var EVENTS = {
 };
 
 var AuthCurrentUser = (function() {
-   var authProperty = 'authLevel';
    function AuthCurrentUser(userData, authLevel) {
 
       /* jshint ignore:start */
       for(var k in userData) {
-         if(userData.hasOwnProperty(k) && k !== authProperty) {
+         if(userData.hasOwnProperty(k) && k !== AUTHPROPERTY) {
             this[k] = userData[k];
          }
       }
       /* jshint ignore:end */
 
-      Object.defineProperty(this, authProperty, {
+      Object.defineProperty(this, AUTHPROPERTY, {
          enumerable: true,
-         value: authLevel || userData[authProperty] || 0
+         value: authLevel || 0
       });
    }
 
@@ -84,7 +83,7 @@ function AuthModuleRun($rootScope, AuthService, $state, $location, $timeout) {
 
 angular
    .module('hitmands.auth', ['ui.router'])
-   .provider('AuthService', AuthProviderFactory)
+   .provider('AuthService', AuthServiceProviderFactory)
    .directive('authLogin', AuthLoginDirectiveFactory)
    .directive('authLogout', AuthLogoutDirectiveFactory)
    .directive('authClasses', AuthClassesDirectiveFactory)

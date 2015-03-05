@@ -1,8 +1,22 @@
 /* @ngInject */
-function AuthProviderFactory( $httpProvider ) {
+function AuthServiceProviderFactory( $httpProvider ) {
    var _dataParser;
    var self = this;
    var isBasicAuthEnabled = false;
+
+   /**
+    * Changes the name of the authProperty to check in ui.router $state Object
+    *
+    * @preserve
+    * @param {String} [newAuthPropertyName = 'authLevel']
+    */
+   self.setAuthLevelPropertyName = function AuthServiceSetAuthLevelPropertyName( newAuthPropertyName ) {
+      if(angular.isString(newAuthPropertyName)) {
+         AUTHPROPERTY = newAuthPropertyName;
+      }
+
+      return self;
+   };
 
    /**
     * Extends Used Routes
@@ -16,7 +30,6 @@ function AuthProviderFactory( $httpProvider ) {
       return self;
    };
 
-
    /**
     * Appends Authentication Token to all $httpRequests
     * If a function is passed as second parameter is passed, it will be invoked for all $httpResponses with the config object
@@ -26,6 +39,10 @@ function AuthProviderFactory( $httpProvider ) {
     * @param {Function} [responseInterceptor] - if function passed, it will be invoked on every $httpResponses with the config object
     */
    self.tokenizeHttp = function AuthServiceTokenizeHttp( tokenKey, responseInterceptor ) {
+      if(angular.isFunction(tokenKey)) {
+         responseInterceptor = tokenKey;
+         tokenKey = void(0);
+      }
       $httpProvider.interceptors.push(function AuthServiceInterceptor() {
 
          return {
@@ -89,7 +106,7 @@ function AuthProviderFactory( $httpProvider ) {
    };
 
 
-   self.$get = function($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
+   self.$get = function AuthServiceFactory($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
       if(!angular.isFunction(_dataParser)) {
          $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'You need to set a Callback that handles the $http response');
       }
@@ -160,7 +177,7 @@ function AuthProviderFactory( $httpProvider ) {
           * @preserve
           * @returns {ng.IPromise}
           */
-         fetchLoggedUser: function() {
+         fetch: function() {
 
             return $http
                .get(routes.fetch, { cache: false })
@@ -211,7 +228,7 @@ function AuthProviderFactory( $httpProvider ) {
          /**
           * @preserve
           * @param {Object} user
-          * @param {Number} authLevel
+          * @param {Number|Array} authLevel
           * @param {String} authenticationToken
           */
          setCurrentUser: function(user, authLevel, authenticationToken) {
@@ -277,7 +294,7 @@ function AuthProviderFactory( $httpProvider ) {
             }
 
             if(angular.isArray(stateAuthLevel)) {
-               return _authorizeRoleBased(stateAuthLevel, userAuthLevel);
+               return _inArray(stateAuthLevel, userAuthLevel);
             }
 
             $exceptionHandler('AuthService.authorize', 'Cannot process authorization');
@@ -293,7 +310,7 @@ function AuthProviderFactory( $httpProvider ) {
           */
          check: function(needle, haystack) {
 
-            return _authorizeRoleBased(haystack, needle);
+            return _inArray(haystack, needle);
          },
 
          /**

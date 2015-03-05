@@ -4,15 +4,14 @@ function AuthLoginDirectiveFactory(AuthService) {
    return {
       restrict: 'A',
       link: function(iScope, iElement, iAttributes) {
+         var _form = null;
          var credentials = iScope[ iAttributes['authLogin'] ];
 
-         var resolve = angular.isFunction(iScope.$eval( iAttributes['authLoginOnResolve'] )) ?
-            iScope.$eval( iAttributes['authLoginOnResolve'] ) : angular.noop;
+         var resolve = iScope.$eval( iAttributes['authLoginOnResolve'] );
+         var reject = iScope.$eval( iAttributes['authLoginOnReject'] );
+         resolve = angular.isFunction(resolve) ? resolve : angular.noop;
+         reject = angular.isFunction(reject) ? reject : angular.noop;
 
-         var reject = angular.isFunction(iScope.$eval( iAttributes['authLoginOnReject'] )) ?
-            iScope.$eval( iAttributes['authLoginOnReject'] ) : angular.noop;
-
-         var _form = null;
 
          try {
             _form = iScope[iElement.attr('name')];
@@ -26,11 +25,10 @@ function AuthLoginDirectiveFactory(AuthService) {
                return reject({ attrName: 'auth-login', attrValue: credentials });
             }
 
-            if( angular.isObject(_form) && _form.hasOwnProperty('$invalid') && _form.$invalid ) {
+            if( angular.isObject(_form) && _form.$invalid ) {
                event.preventDefault();
-               return reject({'form.$invalid' : _form.$invalid, '$form.$pristine' : _form.$pristine});
+               return reject(_form.$error);
             }
-
             return AuthService.login(credentials).then(resolve, reject);
          });
 

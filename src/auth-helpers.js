@@ -42,8 +42,12 @@ function _authorizeLevelBased( stateAuthLevel, userAuthLevel ) {
  * @returns {Boolean}
  * @private
  */
-function _authorizeRoleBased( haystack, needle ) {
+function _inArray( haystack, needle ) {
    needle = angular.isArray(needle) ? needle : [needle];
+
+   if(haystack.length < 1) {
+      return true;
+   }
 
    for(var i = 0, len = haystack.length; i < len; i++) {
       for(var j = 0, jLen = needle.length; j < jLen; j++) {
