@@ -1,5 +1,6 @@
 (function() {
    "use strict";
+   /*jshint es5: true */
 
    var
       path = require('path'),

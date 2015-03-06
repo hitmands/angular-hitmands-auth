@@ -108,7 +108,7 @@ function AuthServiceProviderFactory( $httpProvider ) {
 
    self.$get = function AuthServiceFactory($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
       if(!angular.isFunction(_dataParser)) {
-         $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'You need to set a Callback that handles the $http response');
+         $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'You need to set a Callback that handles the $http response. ', 'https://github.com/hitmands/angular-hitmands-auth#module-provider-parsehttpauthdata');
       }
 
       /**

@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-03-05
+ * @Date: 2015-03-06
  * @Version: 1.1.0
  * 
  * @ngdoc: module
