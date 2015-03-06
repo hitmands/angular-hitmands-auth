@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthService.login', function() {
+   'use strict';
    var $httpBackend, AuthServiceProvider;
    var loginRoute = '/login';
 

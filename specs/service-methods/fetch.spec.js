@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthService.fetch', function() {
+   'use strict';
    var $httpBackend, AuthServiceProvider;
    var fetchRoute = '/user/me';
 

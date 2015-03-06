@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthService.authorize', function() {
+   'use strict';
    var $httpBackend, AuthServiceProvider;
    var logoutRoute = '/logout';
 

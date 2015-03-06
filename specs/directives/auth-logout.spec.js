@@ -1,4 +1,5 @@
 describe('hitmands.auth.directives.authLogout', function() {
+   'use strict';
    var $compile, $rootScope, AuthServiceProvider;
    var logoutBtn = '<button id="logoutBtn" type="button" auth-logout>submit</button>';
 

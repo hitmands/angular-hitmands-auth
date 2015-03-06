@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthServiceProvider.parseHttpAuthData', function() {
+   'use strict';
 
    describe('MIDDLEWARE NOT SET', function() {
       beforeEach(function() {

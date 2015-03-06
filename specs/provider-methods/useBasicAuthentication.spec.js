@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthServiceProvider.useBasicAuthentication', function() {
+   'use strict';
    var $httpBackend;
    var loginData = {param1: 'test1', param2: 'test2', username: 'test', password: 'test'};
 

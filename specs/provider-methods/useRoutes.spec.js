@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthServiceProvider.userRoutes', function() {
+   'use strict';
    var $httpBackend;
 
    beforeEach(function() {

@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthServiceRun.on.hitmands.auth:update', function() {
+   'use strict';
    var $httpBackend, AuthService, $state, $compile, $rootScope, $timeout, $location;
 
    beforeEach(function() {

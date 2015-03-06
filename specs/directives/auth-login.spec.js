@@ -1,4 +1,5 @@
 describe('hitmands.auth.directives.authLogin', function() {
+   'use strict';
    var $compile, $rootScope, AuthServiceProvider;
    var loginForm = '<form id="loginForm" name="loginForm" auth-login="fields" auth-login-on-resolve="onLogin" auth-login-on-reject="onLogout">' +
       '<input type="text" required ng-model="fields.username" name="username"/>' +

@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthServiceProvider.tokenizeHttp', function() {
+   'use strict';
    var $httpBackend;
 
    describe('DEFAULT TOKEN', function() {

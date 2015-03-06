@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthServiceProvider.setLoggedUser', function() {
+   'use strict';
    var $httpBackend, AuthServiceProvider;
 
    beforeEach(function() {

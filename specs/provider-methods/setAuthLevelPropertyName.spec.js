@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthServiceProvider.setAuthLevelPropertyName', function() {
+   'use strict';
    var $httpBackend;
 
    describe('invalid param', function() {

@@ -1,4 +1,5 @@
 describe('hitmands.auth.AuthServiceRun.on.$stateChangeStart', function() {
+   'use strict';
    var $httpBackend, AuthService, $state, $compile, $rootScope, $timeout;
 
    beforeEach(function() {

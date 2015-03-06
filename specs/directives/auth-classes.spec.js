@@ -1,4 +1,5 @@
 describe('hitmands.auth.directives.authClasses', function() {
+   'use strict';
    var $compile, $rootScope, AuthServiceProvider;
    var element = '<div id="testAuthClasses" auth-classes></div>';
 
