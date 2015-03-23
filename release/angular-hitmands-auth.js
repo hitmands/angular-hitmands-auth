@@ -1,3 +1,18 @@
+/**!
+ * @Project: angular-hitmands-auth
+ * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
+ * @Link: https://github.com/hitmands/angular-hitmands-auth
+ * @License: MIT
+ * @Date: 2015-03-23
+ * @Version: 1.1.0
+ * 
+ * @ngdoc: module
+ * @namespace: hitmands
+ * @name: auth
+ * @module: hitmands.auth
+ * @description: Full Implementation of an authentication management system.
+***/
+
 (function(window, angular) {
    'use strict';
 
