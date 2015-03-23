@@ -4,9 +4,9 @@
  * @module hitmands.auth
  **/
 var AUTO_ROUTING_PROTECTION = true;
+var AUTH_PROPERTY = 'authLevel';
 var currentUser = null;
 var authToken = null;
-var AUTH_PROPERTY = 'authLevel';
 var routes = {
    "login": '/users/login',
    "logout": '/users/logout',
@@ -50,13 +50,13 @@ var AuthCurrentUser = (function() {
 
 /* @ngInject */
 function AuthModuleRun($rootScope, AuthService, $state, $location, $timeout) {
-   if(AUTO_ROUTING_PROTECTION) {
-      function redirect() {
-         $timeout(function() {
-            $location.path('/');
-         }, 0);
-      }
+   function redirect() {
+      $timeout(function() {
+         $location.path('/');
+      }, 0);
+   }
 
+   if(AUTO_ROUTING_PROTECTION) {
       $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
 
          if( !AuthService.authorize(toState, AuthService.getCurrentUser()) ) {
