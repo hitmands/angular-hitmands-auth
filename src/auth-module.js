@@ -3,9 +3,10 @@
  * @name hitmands.auth
  * @module hitmands.auth
  **/
+var AUTO_ROUTING_PROTECTION = true;
 var currentUser = null;
 var authToken = null;
-var AUTHPROPERTY = 'authLevel';
+var AUTH_PROPERTY = 'authLevel';
 var routes = {
    "login": '/users/login',
    "logout": '/users/logout',
@@ -32,13 +33,13 @@ var AuthCurrentUser = (function() {
 
       /* jshint ignore:start */
       for(var k in userData) {
-         if(userData.hasOwnProperty(k) && k !== AUTHPROPERTY) {
+         if(userData.hasOwnProperty(k) && k !== AUTH_PROPERTY) {
             this[k] = userData[k];
          }
       }
       /* jshint ignore:end */
 
-      Object.defineProperty(this, AUTHPROPERTY, {
+      Object.defineProperty(this, AUTH_PROPERTY, {
          enumerable: true,
          value: authLevel || 0
       });
@@ -49,36 +50,38 @@ var AuthCurrentUser = (function() {
 
 /* @ngInject */
 function AuthModuleRun($rootScope, AuthService, $state, $location, $timeout) {
-   function redirect() {
-      $timeout(function() {
-         $location.path('/');
-      }, 0);
-   }
+   if(AUTO_ROUTING_PROTECTION) {
+      function redirect() {
+         $timeout(function() {
+            $location.path('/');
+         }, 0);
+      }
 
-   $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+      $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
 
-      if( !AuthService.authorize(toState, AuthService.getCurrentUser()) ) {
-         var _isUserLoggedIn = AuthService.isUserLoggedIn();
-         event.preventDefault();
+         if( !AuthService.authorize(toState, AuthService.getCurrentUser()) ) {
+            var _isUserLoggedIn = AuthService.isUserLoggedIn();
+            event.preventDefault();
 
-         $rootScope.$broadcast('$stateChangeError', toState, toParams, fromState, fromParams, {
-            statusCode: _isUserLoggedIn ? 403 : 401,
-            statusText: _isUserLoggedIn ? 'Forbidden' : 'Unauthorized',
-            isUserLoggedIn: _isUserLoggedIn,
-            publisher: 'AuthService.authorize'
-         });
+            $rootScope.$broadcast('$stateChangeError', toState, toParams, fromState, fromParams, {
+               statusCode: _isUserLoggedIn ? 403 : 401,
+               statusText: _isUserLoggedIn ? 'Forbidden' : 'Unauthorized',
+               isUserLoggedIn: _isUserLoggedIn,
+               publisher: 'AuthService.authorize'
+            });
 
-         if( !fromState.name ) {
+            if( !fromState.name ) {
+               redirect();
+            }
+         }
+      });
+
+      $rootScope.$on(EVENTS.update, function(event) {
+         if( !AuthService.authorize($state.current, AuthService.getCurrentUser()) ) {
             redirect();
          }
-      }
-   });
-
-   $rootScope.$on(EVENTS.update, function(event) {
-      if( !AuthService.authorize($state.current, AuthService.getCurrentUser()) ) {
-         redirect();
-      }
-   });
+      });
+   }
 }
 
 angular

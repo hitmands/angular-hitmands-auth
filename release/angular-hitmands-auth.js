@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-03-06
+ * @Date: 2015-03-23
  * @Version: 1.1.0
  * 
  * @ngdoc: module
@@ -23,22 +23,24 @@
             $location.path("/");
          }, 0);
       }
-      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
-         if (!AuthService.authorize(toState, AuthService.getCurrentUser())) {
-            var _isUserLoggedIn = AuthService.isUserLoggedIn();
-            event.preventDefault();
-            $rootScope.$broadcast("$stateChangeError", toState, toParams, fromState, fromParams, {
-               "statusCode": _isUserLoggedIn ? 403 : 401,
-               "statusText": _isUserLoggedIn ? "Forbidden" : "Unauthorized",
-               "isUserLoggedIn": _isUserLoggedIn,
-               "publisher": "AuthService.authorize"
-            });
-            fromState.name || redirect();
-         }
-      });
-      $rootScope.$on(EVENTS.update, function(event) {
-         AuthService.authorize($state.current, AuthService.getCurrentUser()) || redirect();
-      });
+      if (AUTO_ROUTING_PROTECTION) {
+         $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
+            if (!AuthService.authorize(toState, AuthService.getCurrentUser())) {
+               var _isUserLoggedIn = AuthService.isUserLoggedIn();
+               event.preventDefault();
+               $rootScope.$broadcast("$stateChangeError", toState, toParams, fromState, fromParams, {
+                  "statusCode": _isUserLoggedIn ? 403 : 401,
+                  "statusText": _isUserLoggedIn ? "Forbidden" : "Unauthorized",
+                  "isUserLoggedIn": _isUserLoggedIn,
+                  "publisher": "AuthService.authorize"
+               });
+               fromState.name || redirect();
+            }
+         });
+         $rootScope.$on(EVENTS.update, function(event) {
+            AuthService.authorize($state.current, AuthService.getCurrentUser()) || redirect();
+         });
+      }
    }
    AuthModuleRun.$inject = ['$rootScope', 'AuthService', '$state', '$location', '$timeout'];
 
@@ -72,6 +74,10 @@
    /* @ngInject */
    function AuthServiceProviderFactory($httpProvider) {
       var _dataParser, self = this, isBasicAuthEnabled = !1;
+      self.disableAutoRoutingProtection = function AuthServiceDisableAutoRoutingProtection() {
+         AUTO_ROUTING_PROTECTION = !1;
+         return self;
+      };
       /**
     * Changes the name of the authProperty to check in ui.router $state Object
     *
@@ -79,7 +85,7 @@
     * @param {String} [newAuthPropertyName = 'authLevel']
     */
       self.setAuthLevelPropertyName = function AuthServiceSetAuthLevelPropertyName(newAuthPropertyName) {
-         angular.isString(newAuthPropertyName) && (AUTHPROPERTY = newAuthPropertyName);
+         angular.isString(newAuthPropertyName) && (AUTH_PROPERTY = newAuthPropertyName);
          return self;
       };
       /**
@@ -151,7 +157,7 @@
          angular.isFunction(callback) && (_dataParser = callback);
          return self;
       };
-      self.$get = ['$rootScope', '$http', '$state', '$exceptionHandler', '$timeout', '$q', function AuthServiceFactory($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
+      self.$get = ['$rootScope', '$http', '$state', '$exceptionHandler', '$timeout', '$q', '$injector', function AuthServiceFactory($rootScope, $http, $state, $exceptionHandler, $timeout, $q, $injector) {
          function _setLoggedUser(newUserData, newAuthToken, newAuthLevel) {
             self.setLoggedUser(newUserData, newAuthToken, newAuthLevel);
             $rootScope.$broadcast(EVENTS.update);
@@ -159,7 +165,7 @@
                $rootScope.$$phase || $rootScope.$digest();
             }, 0);
          }
-         angular.isFunction(_dataParser) || $exceptionHandler("AuthServiceProvider.parseHttpAuthData", "You need to set a Callback that handles the $http response");
+         angular.isFunction(_dataParser) || $exceptionHandler("AuthServiceProvider.parseHttpAuthData", "You need to set a Callback that handles the $http response. ", "https://github.com/hitmands/angular-hitmands-auth#module-provider-parsehttpauthdata");
          return {
             /**
           * Performs Login Request and sets the Auth Data
@@ -278,9 +284,10 @@
                   return !1;
                }
                try {
-                  userAuthLevel = user[AUTHPROPERTY];
+                  userAuthLevel = user[AUTH_PROPERTY];
                } catch (e) {}
-               var stateAuthLevel = (state.data ? state.data[AUTHPROPERTY] : state[AUTHPROPERTY]) || 0;
+               var stateAuthLevel = (state.data ? state.data[AUTH_PROPERTY] : state[AUTH_PROPERTY]) || 0;
+               angular.isFunction(stateAuthLevel) && (stateAuthLevel = $injector.invoke(stateAuthLevel));
                if (angular.isNumber(stateAuthLevel)) {
                   return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
                }
@@ -373,7 +380,7 @@
                var newClasses = "";
                if (AuthService.isUserLoggedIn()) {
                   try {
-                     newClasses = " user-has-role-" + AuthService.getCurrentUser()[AUTHPROPERTY].join(" user-has-role-");
+                     newClasses = " user-has-role-" + AuthService.getCurrentUser()[AUTH_PROPERTY].join(" user-has-role-");
                   } catch (e) {}
                   iAttributes.$updateClass(classes.loggedIn + newClasses, classes.notLoggedIn);
                   classes.last = newClasses;
@@ -390,7 +397,7 @@
    }
    AuthClassesDirectiveFactory.$inject = ['AuthService'];
 
-   var currentUser = null, authToken = null, AUTHPROPERTY = "authLevel", routes = {
+   var AUTO_ROUTING_PROTECTION = !0, currentUser = null, authToken = null, AUTH_PROPERTY = "authLevel", routes = {
       "login": "/users/login",
       "logout": "/users/logout",
       "fetch": "/users/me"
@@ -412,10 +419,10 @@
       function AuthCurrentUser(userData, authLevel) {
          /* jshint ignore:start */
          for (var k in userData) {
-            userData.hasOwnProperty(k) && k !== AUTHPROPERTY && (this[k] = userData[k]);
+            userData.hasOwnProperty(k) && k !== AUTH_PROPERTY && (this[k] = userData[k]);
          }
          /* jshint ignore:end */
-         Object.defineProperty(this, AUTHPROPERTY, {
+         Object.defineProperty(this, AUTH_PROPERTY, {
             "enumerable": !0,
             "value": authLevel || 0
          });

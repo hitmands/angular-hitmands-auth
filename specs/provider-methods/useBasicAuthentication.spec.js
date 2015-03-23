@@ -3,7 +3,7 @@ describe('hitmands.auth.AuthServiceProvider.useBasicAuthentication', function() 
    var $httpBackend;
    var loginData = {param1: 'test1', param2: 'test2', username: 'test', password: 'test'};
 
-   describe('no basic authenticatino', function() {
+   describe('no basic authentication', function() {
       beforeEach(function() {
          angular.mock.module( 'ui.router', 'hitmands.auth', function(AuthServiceProvider, $exceptionHandlerProvider) {
             $exceptionHandlerProvider.mode('log');

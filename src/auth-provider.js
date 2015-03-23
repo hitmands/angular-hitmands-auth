@@ -4,6 +4,17 @@ function AuthServiceProviderFactory( $httpProvider ) {
    var self = this;
    var isBasicAuthEnabled = false;
 
+
+   /**
+    * Disables the auto routing protection
+    *
+    */
+   self.disableAutoRoutingProtection = function AuthServiceDisableAutoRoutingProtection() {
+      AUTO_ROUTING_PROTECTION = false;
+
+      return self;
+   };
+
    /**
     * Changes the name of the authProperty to check in ui.router $state Object
     *
@@ -12,7 +23,7 @@ function AuthServiceProviderFactory( $httpProvider ) {
     */
    self.setAuthLevelPropertyName = function AuthServiceSetAuthLevelPropertyName( newAuthPropertyName ) {
       if(angular.isString(newAuthPropertyName)) {
-         AUTHPROPERTY = newAuthPropertyName;
+         AUTH_PROPERTY = newAuthPropertyName;
       }
 
       return self;
@@ -106,7 +117,7 @@ function AuthServiceProviderFactory( $httpProvider ) {
    };
 
 
-   self.$get = function AuthServiceFactory($rootScope, $http, $state, $exceptionHandler, $timeout, $q) {
+   self.$get = function AuthServiceFactory($rootScope, $http, $state, $exceptionHandler, $timeout, $q, $injector) {
       if(!angular.isFunction(_dataParser)) {
          $exceptionHandler('AuthServiceProvider.parseHttpAuthData', 'You need to set a Callback that handles the $http response. ', 'https://github.com/hitmands/angular-hitmands-auth#module-provider-parsehttpauthdata');
       }
@@ -284,10 +295,14 @@ function AuthServiceProviderFactory( $httpProvider ) {
             }
 
             try {
-               userAuthLevel = user[AUTHPROPERTY];
+               userAuthLevel = user[AUTH_PROPERTY];
             } catch(e) {}
 
-            var stateAuthLevel = (state.data ? state.data[AUTHPROPERTY] : state[AUTHPROPERTY]) || 0;
+            var stateAuthLevel = (state.data ? state.data[AUTH_PROPERTY] : state[AUTH_PROPERTY]) || 0;
+
+            if(angular.isFunction(stateAuthLevel)) {
+               stateAuthLevel = $injector.invoke(stateAuthLevel);
+            }
 
             if(angular.isNumber(stateAuthLevel)) {
                return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
