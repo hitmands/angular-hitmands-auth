@@ -94,16 +94,6 @@
          });
       };
       /**
-    * Changes the name of the authProperty to check in ui.router $state Object
-    *
-    * @preserve
-    * @param {String} [newAuthPropertyName = 'authLevel']
-    */
-      self.setAuthLevelPropertyName = function AuthServiceSetAuthLevelPropertyName(newAuthPropertyName) {
-         angular.isString(newAuthPropertyName) && (AUTH_PROPERTY = newAuthPropertyName);
-         return self;
-      };
-      /**
     * Extends Used Routes
     *
     * @preserve

@@ -26,19 +26,6 @@ function AuthServiceProviderFactory( $httpProvider ) {
       return self.useRoutes({__redirectPath__: path});
    };
 
-   /**
-    * Changes the name of the authProperty to check in ui.router $state Object
-    *
-    * @preserve
-    * @param {String} [newAuthPropertyName = 'authLevel']
-    */
-   self.setAuthLevelPropertyName = function AuthServiceSetAuthLevelPropertyName( newAuthPropertyName ) {
-      if(angular.isString(newAuthPropertyName)) {
-         AUTH_PROPERTY = newAuthPropertyName;
-      }
-
-      return self;
-   };
 
    /**
     * Extends Used Routes
