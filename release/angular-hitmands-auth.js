@@ -1,18 +1,3 @@
-/**!
- * @Project: angular-hitmands-auth
- * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
- * @Link: https://github.com/hitmands/angular-hitmands-auth
- * @License: MIT
- * @Date: 2015-03-23
- * @Version: 1.1.0
- * 
- * @ngdoc: module
- * @namespace: hitmands
- * @name: auth
- * @module: hitmands.auth
- * @description: Full Implementation of an authentication management system.
-***/
-
 (function(window, angular) {
    'use strict';
 
@@ -20,7 +5,7 @@
    function AuthModuleRun($rootScope, AuthService, $state, $location, $timeout) {
       function redirect() {
          $timeout(function() {
-            $location.path("/");
+            $location.path(routes.__redirectPath__);
          }, 0);
       }
       if (AUTO_ROUTING_PROTECTION) {
@@ -74,9 +59,24 @@
    /* @ngInject */
    function AuthServiceProviderFactory($httpProvider) {
       var _dataParser, self = this, isBasicAuthEnabled = !1;
+      /**
+    * @preserve
+    *
+    * Disables the auto routing protection
+    */
       self.disableAutoRoutingProtection = function AuthServiceDisableAutoRoutingProtection() {
          AUTO_ROUTING_PROTECTION = !1;
          return self;
+      };
+      /**
+    * @preserve
+    *
+    * Set a redirection path used by $location.path().
+    */
+      self.setRedirectPath = function AuthServiceSetRedirectPath(path) {
+         return self.useRoutes({
+            "__redirectPath__": path
+         });
       };
       /**
     * Changes the name of the authProperty to check in ui.router $state Object
@@ -104,14 +104,14 @@
     *
     * @preserve
     * @param {String} [tokenKey = 'x-auth-token'] - The Name of the header Key, default x-auth-token
-    * @param {Function} [responseInterceptor] - if function passed, it will be invoked on every $httpResponses with the config object
+    * @param {Function} [responseErrorInterceptor] - if function passed, it will be invoked on every $httpResponseError with the config object
     */
-      self.tokenizeHttp = function AuthServiceTokenizeHttp(tokenKey, responseInterceptor) {
+      self.tokenizeHttp = function AuthServiceTokenizeHttp(tokenKey, responseErrorInterceptor) {
          if (angular.isFunction(tokenKey)) {
-            responseInterceptor = tokenKey;
+            responseErrorInterceptor = tokenKey;
             tokenKey = void 0;
          }
-         $httpProvider.interceptors.push(function AuthServiceInterceptor() {
+         $httpProvider.interceptors.push(['$injector', function AuthServiceInterceptor($injector) {
             return {
                "request": function AuthServiceRequestTransform(config) {
                   if (currentUser instanceof AuthCurrentUser) {
@@ -121,9 +121,9 @@
                   }
                   return config;
                },
-               "responseError": responseInterceptor
+               "responseError": responseErrorInterceptor
             };
-         });
+         }]);
          return self;
       };
       /**
@@ -400,7 +400,8 @@
    var AUTO_ROUTING_PROTECTION = !0, AUTH_PROPERTY = "authLevel", currentUser = null, authToken = null, routes = {
       "login": "/users/login",
       "logout": "/users/logout",
-      "fetch": "/users/me"
+      "fetch": "/users/me",
+      "__redirectPath__": "/"
    }, EVENTS = {
       "login": {
          "success": "hitmands.auth:login.resolved",

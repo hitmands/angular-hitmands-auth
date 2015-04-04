@@ -108,10 +108,11 @@ describe('hitmands.auth.AuthServiceProvider.tokenizeHttp', function() {
    describe('CUSTOM TOKEN AND RESPONSE ERROR INTERCEPTOR', function() {
       var responseError = null;
       beforeEach(function() {
-         angular.mock.module( 'ui.router', 'hitmands.auth', function(AuthServiceProvider, $exceptionHandlerProvider) {
+         angular.mock.module( 'ui.router', 'hitmands.auth', function(AuthServiceProvider, $exceptionHandlerProvider, $injector) {
             $exceptionHandlerProvider.mode('log');
 
             AuthServiceProvider.tokenizeHttp('custom-auth-token-key', function(config) {
+
                responseError = config;
             });
          });
@@ -124,7 +125,7 @@ describe('hitmands.auth.AuthServiceProvider.tokenizeHttp', function() {
       });
 
       it('Interceptor can set responseError variable. Should have Token and Custom Header Key', angular.mock.inject(
-         function(AuthService, $http) {
+         function(AuthService, $http, $exceptionHandler) {
 
             var TOKEN = 'custom-auth-token';
             AuthService.setCurrentUser({

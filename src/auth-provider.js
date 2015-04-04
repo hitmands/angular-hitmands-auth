@@ -6,13 +6,24 @@ function AuthServiceProviderFactory( $httpProvider ) {
 
 
    /**
-    * Disables the auto routing protection
+    * @preserve
     *
+    * Disables the auto routing protection
     */
    self.disableAutoRoutingProtection = function AuthServiceDisableAutoRoutingProtection() {
       AUTO_ROUTING_PROTECTION = false;
 
       return self;
+   };
+
+   /**
+    * @preserve
+    *
+    * Set a redirection path used by $location.path().
+    */
+   self.setRedirectPath = function AuthServiceSetRedirectPath(path) {
+
+      return self.useRoutes({__redirectPath__: path});
    };
 
    /**
@@ -47,14 +58,14 @@ function AuthServiceProviderFactory( $httpProvider ) {
     *
     * @preserve
     * @param {String} [tokenKey = 'x-auth-token'] - The Name of the header Key, default x-auth-token
-    * @param {Function} [responseInterceptor] - if function passed, it will be invoked on every $httpResponses with the config object
+    * @param {Function} [responseErrorInterceptor] - if function passed, it will be invoked on every $httpResponseError with the config object
     */
-   self.tokenizeHttp = function AuthServiceTokenizeHttp( tokenKey, responseInterceptor ) {
+   self.tokenizeHttp = function AuthServiceTokenizeHttp( tokenKey, responseErrorInterceptor ) {
       if(angular.isFunction(tokenKey)) {
-         responseInterceptor = tokenKey;
+         responseErrorInterceptor = tokenKey;
          tokenKey = void(0);
       }
-      $httpProvider.interceptors.push(function AuthServiceInterceptor() {
+      $httpProvider.interceptors.push(function AuthServiceInterceptor($injector) {
 
          return {
             request: function AuthServiceRequestTransform(config) {
@@ -67,7 +78,7 @@ function AuthServiceProviderFactory( $httpProvider ) {
 
                return config;
             },
-            responseError: responseInterceptor
+            responseError: responseErrorInterceptor
          };
       });
 

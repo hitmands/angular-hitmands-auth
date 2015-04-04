@@ -10,7 +10,8 @@ var authToken = null;
 var routes = {
    "login": '/users/login',
    "logout": '/users/logout',
-   "fetch": '/users/me'
+   "fetch": '/users/me',
+   "__redirectPath__": '/'
 };
 var EVENTS = {
    login: {
@@ -52,7 +53,7 @@ var AuthCurrentUser = (function() {
 function AuthModuleRun($rootScope, AuthService, $state, $location, $timeout) {
    function redirect() {
       $timeout(function() {
-         $location.path('/');
+         $location.path(routes.__redirectPath__);
       }, 0);
    }
 
