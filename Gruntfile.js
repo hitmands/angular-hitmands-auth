@@ -240,6 +240,10 @@ module.exports = function(grunt) {
                {
                   src: './release/angular-hitmands-auth.min.js',
                   dest: './release/angular-hitmands-auth.min.js'
+               },
+               {
+                  src: './src/sample-configuration.js',
+                  dest: './release/hitmands-auth.config.js'
                }
             ]
          },
