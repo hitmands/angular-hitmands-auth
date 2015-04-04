@@ -1,10 +1,13 @@
-ddescribe('hitmands.auth.AuthServiceProvider.setRedirectPath', function() {
+describe('hitmands.auth.AuthServiceProvider.setRedirectPath', function() {
    'use strict';
    var REDIRECT = '/auth/login';
+   var AuthServiceProvider;
 
    beforeEach(function() {
-      angular.mock.module( 'ui.router', 'hitmands.auth', function(AuthServiceProvider, $exceptionHandlerProvider, $stateProvider) {
+      angular.mock.module( 'ui.router', 'hitmands.auth', function(_AuthServiceProvider_, $exceptionHandlerProvider, $stateProvider) {
+         AuthServiceProvider = _AuthServiceProvider_;
          $exceptionHandlerProvider.mode('log');
+
          AuthServiceProvider
             .setRedirectPath(REDIRECT)
          ;
@@ -14,25 +17,29 @@ ddescribe('hitmands.auth.AuthServiceProvider.setRedirectPath', function() {
                authLevel: 1000
             })
             .state('login', {
-               url: REDIRECT
+               url: 'auth/login',
+               authLevel: 0
             })
          ;
       });
    });
 
-
    it('Test redirect', angular.mock.inject(
       function(AuthService, $exceptionHandler, $state, $location, $rootScope, $timeout) {
-         $state.go('admin');
+
+         $state.go('admin').finally(function() {
+            $timeout.flush();
+         });
          $rootScope.$digest();
-         $timeout.flush();
-         expect($location.path()).toBe(REDIRECT);
-         expect($state.current.name).toBe('login');
+
       }
    ));
 
 
    afterEach(function() {
+      AuthServiceProvider
+         .setRedirectPath('/')
+      ;
    })
 });
 

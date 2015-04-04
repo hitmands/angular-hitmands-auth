@@ -1,3 +1,18 @@
+/**!
+ * @Project: angular-hitmands-auth
+ * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
+ * @Link: https://github.com/hitmands/angular-hitmands-auth
+ * @License: MIT
+ * @Date: 2015-04-04
+ * @Version: 1.1.0
+ * 
+ * @ngdoc: module
+ * @namespace: hitmands
+ * @name: auth
+ * @module: hitmands.auth
+ * @description: Full Implementation of an authentication management system.
+***/
+
 (function(window, angular) {
    'use strict';
 
@@ -11,8 +26,8 @@
       if (AUTO_ROUTING_PROTECTION) {
          $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams) {
             if (!AuthService.authorize(toState, AuthService.getCurrentUser())) {
-               var _isUserLoggedIn = AuthService.isUserLoggedIn();
                event.preventDefault();
+               var _isUserLoggedIn = AuthService.isUserLoggedIn();
                $rootScope.$broadcast("$stateChangeError", toState, toParams, fromState, fromParams, {
                   "statusCode": _isUserLoggedIn ? 403 : 401,
                   "statusText": _isUserLoggedIn ? "Forbidden" : "Unauthorized",
@@ -111,7 +126,7 @@
             responseErrorInterceptor = tokenKey;
             tokenKey = void 0;
          }
-         $httpProvider.interceptors.push(['$injector', function AuthServiceInterceptor($injector) {
+         $httpProvider.interceptors.push(function AuthServiceInterceptor() {
             return {
                "request": function AuthServiceRequestTransform(config) {
                   if (currentUser instanceof AuthCurrentUser) {
@@ -123,7 +138,7 @@
                },
                "responseError": responseErrorInterceptor
             };
-         }]);
+         });
          return self;
       };
       /**

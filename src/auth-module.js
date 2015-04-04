@@ -61,8 +61,8 @@ function AuthModuleRun($rootScope, AuthService, $state, $location, $timeout) {
       $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
 
          if( !AuthService.authorize(toState, AuthService.getCurrentUser()) ) {
-            var _isUserLoggedIn = AuthService.isUserLoggedIn();
             event.preventDefault();
+            var _isUserLoggedIn = AuthService.isUserLoggedIn();
 
             $rootScope.$broadcast('$stateChangeError', toState, toParams, fromState, fromParams, {
                statusCode: _isUserLoggedIn ? 403 : 401,

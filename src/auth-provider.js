@@ -65,7 +65,7 @@ function AuthServiceProviderFactory( $httpProvider ) {
          responseErrorInterceptor = tokenKey;
          tokenKey = void(0);
       }
-      $httpProvider.interceptors.push(function AuthServiceInterceptor($injector) {
+      $httpProvider.interceptors.push(function AuthServiceInterceptor() {
 
          return {
             request: function AuthServiceRequestTransform(config) {
