@@ -291,9 +291,10 @@
                var stateAuthLevel = (state.data ? state.data[AUTH_PROPERTY] : state[AUTH_PROPERTY]) || 0;
                try {
                   userAuthLevel = user[AUTH_PROPERTY];
+               } catch (e) {}
+               try {
                   stateAuthLevel = $injector.invoke(stateAuthLevel);
                } catch (e) {}
-               angular.isFunction(stateAuthLevel) && (stateAuthLevel = $injector.invoke(stateAuthLevel));
                if (angular.isNumber(stateAuthLevel)) {
                   return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
                }

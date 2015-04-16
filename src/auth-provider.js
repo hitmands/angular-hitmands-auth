@@ -295,13 +295,11 @@ function AuthServiceProviderFactory( $httpProvider ) {
 
             try {
                userAuthLevel = user[AUTH_PROPERTY];
-               stateAuthLevel = $injector.invoke(stateAuthLevel);
             } catch(e) {}
 
-
-            if(angular.isFunction(stateAuthLevel)) {
+            try {
                stateAuthLevel = $injector.invoke(stateAuthLevel);
-            }
+            } catch(e) {}
 
             if(angular.isNumber(stateAuthLevel)) {
                return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
