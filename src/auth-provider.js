@@ -291,12 +291,13 @@ function AuthServiceProviderFactory( $httpProvider ) {
                $exceptionHandler('AuthService.authorize', 'first param must be Object');
                return false;
             }
+            var stateAuthLevel = (state.data ? state.data[AUTH_PROPERTY] : state[AUTH_PROPERTY]) || 0;
 
             try {
                userAuthLevel = user[AUTH_PROPERTY];
+               stateAuthLevel = $injector.invoke(stateAuthLevel);
             } catch(e) {}
 
-            var stateAuthLevel = (state.data ? state.data[AUTH_PROPERTY] : state[AUTH_PROPERTY]) || 0;
 
             if(angular.isFunction(stateAuthLevel)) {
                stateAuthLevel = $injector.invoke(stateAuthLevel);

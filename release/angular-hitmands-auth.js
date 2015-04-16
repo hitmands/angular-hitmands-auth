@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-04-04
+ * @Date: 2015-04-16
  * @Version: 1.1.0
  * 
  * @ngdoc: module
@@ -288,10 +288,11 @@
                   $exceptionHandler("AuthService.authorize", "first param must be Object");
                   return !1;
                }
+               var stateAuthLevel = (state.data ? state.data[AUTH_PROPERTY] : state[AUTH_PROPERTY]) || 0;
                try {
                   userAuthLevel = user[AUTH_PROPERTY];
+                  stateAuthLevel = $injector.invoke(stateAuthLevel);
                } catch (e) {}
-               var stateAuthLevel = (state.data ? state.data[AUTH_PROPERTY] : state[AUTH_PROPERTY]) || 0;
                angular.isFunction(stateAuthLevel) && (stateAuthLevel = $injector.invoke(stateAuthLevel));
                if (angular.isNumber(stateAuthLevel)) {
                   return _authorizeLevelBased(stateAuthLevel, userAuthLevel);
