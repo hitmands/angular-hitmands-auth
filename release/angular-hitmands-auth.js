@@ -3,7 +3,7 @@
  * @Authors: Giuseppe Mandato <gius.mand.developer@gmail.com>
  * @Link: https://github.com/hitmands/angular-hitmands-auth
  * @License: MIT
- * @Date: 2015-04-16
+ * @Date: 2015-04-18
  * @Version: 1.1.0
  * 
  * @ngdoc: module
@@ -141,9 +141,9 @@
       };
       /**
     * @preserve
-    * @param {Object|null} [userData=null]
-    * @param {Number|null} authLevel
-    * @param {String|null} [authenticationToken=null]
+    * @param {Object|Null} [userData=null]
+    * @param {String|Null} [authenticationToken=null]
+    * @param {Number|Array|Null} authLevel
     */
       self.setLoggedUser = function AuthServiceLoggedUserSetter(userData, authenticationToken, authLevel) {
          if (!_validAuthData(userData, authenticationToken)) {

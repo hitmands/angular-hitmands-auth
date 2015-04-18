@@ -47,7 +47,7 @@ describe('hitmands.auth.AuthService.authorize', function() {
    ));
 
 
-   iit('Test Injectables on authorize when authLevel is Function', angular.mock.inject(
+   it('Test Injectables on authorize when authLevel is Function', angular.mock.inject(
       function(_AuthService_, $exceptionHandler, $timeout) {
          var $state = {
             authLevel: function($rootScope, AuthService) {

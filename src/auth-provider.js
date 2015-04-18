@@ -84,9 +84,9 @@ function AuthServiceProviderFactory( $httpProvider ) {
 
    /**
     * @preserve
-    * @param {Object|null} [userData=null]
-    * @param {Number|null} authLevel
-    * @param {String|null} [authenticationToken=null]
+    * @param {Object|Null} [userData=null]
+    * @param {String|Null} [authenticationToken=null]
+    * @param {Number|Array|Null} authLevel
     */
    self.setLoggedUser = function AuthServiceLoggedUserSetter( userData, authenticationToken, authLevel ) {
       if( !_validAuthData(userData, authenticationToken) ) {
