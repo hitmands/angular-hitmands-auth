@@ -98,7 +98,7 @@ angular
         $stateProvider
             .state({
                 name: 'protected',
-                url: '/protected/,
+                url: '/protected/',
                 data: {
                     authLevel: ['administrator']
                 }
@@ -109,13 +109,13 @@ angular
 
 ##<a name="module-run"></a> Usage
 ```javascript
+$rootScope.currentUser = AuthService.getCurrentUser();
+$rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
+
+$rootScope.$on('hitmands.auth:update', function(event) {
     $rootScope.currentUser = AuthService.getCurrentUser();
     $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
-
-    $rootScope.$on('hitmands.auth:update', function(event) {
-        $rootScope.currentUser = AuthService.getCurrentUser();
-        $rootScope.isUserLoggedIn = AuthService.isUserLoggedIn();
-    });
+});
 ```
 
 ##<a name="module-events"></a> Events
@@ -350,7 +350,7 @@ AuthService.login();
 ```
 
 ##<a name="module-service-logout"></a> AuthService.logout
-This method performs a **$http POST request** to routes.logout, remove the AuthCurrentUser Object and triggers the 'hitmands.auth:logout.success' or 'hitmands.auth:logout.error' angular event. This method is also invoked by [logout directive](#module-directives-logout).
+This method performs a **$http POST request** to routes.logout, removes the AuthCurrentUser Object and triggers the 'hitmands.auth:logout.success' or 'hitmands.auth:logout.error' angular event. This method is also invoked by [logout directive](#module-directives-logout).
 Returns `{Promise}`.
 
 ```javascript
