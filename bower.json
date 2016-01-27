@@ -12,6 +12,7 @@
     "User Authentication"
   ],
   "license": "MIT",
+  "main": "release/angular-hitmands-auth.js",
   "ignore": [
     "**/.*",
     "node_modules",
